@@ -76,9 +76,9 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     // create a server
-    lsp_server *server = lsp_server_create(atoi(argv[1]));/* NON RPC */
-    if(!server)/* NON RPC */
-        return -1;/* NON RPC */
+    lsp_server *server = lsp_server_create(atoi(argv[1]));
+    if(!server)
+        return -1;
 
     // keeps track of available worker who are not currently wrokinrg
     std::queue<uint32_t> inactive_workers; 
@@ -97,11 +97,11 @@ int main(int argc, char* argv[]){
     
     while(true){
         // wait for data from clients
-        bytes_read = lsp_server_read(server,payload,&returned_id);/* NON RPC */
+        bytes_read = lsp_server_read(server,payload,&returned_id);
         
         // if bytes_read > 0 then there is data to be read
         // if bytes_read == 0 then a client disconnected
-        if(bytes_read) {/* NON RPC */
+        if(bytes_read) {
             printf("[%d]: %s\n",returned_id, payload);
             if(payload[0] == 'j') { // worker joined the server
                 inactive_workers.push(returned_id); // add to inactive_workers

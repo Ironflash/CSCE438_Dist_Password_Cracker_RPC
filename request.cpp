@@ -1,9 +1,5 @@
 #include <iostream>
-// #include "lsp_client.h"
-#include <rpc/rpc.h>
-#include "cracker.h"
-
-
+#include "lsp_client.h"
 
 int main(int argc, char* argv[]){
     // randomization seed requested by Dr. Stoleru
@@ -38,20 +34,12 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
-    //Create the client
-    CLIENT *cl = clnt_create(argv[1], cracker, 0,"tcp");
-    if (cl == NULL) 
-    {
-        clnt_pcreateerror(argv[1]);
-        exit(1);
-    }
-
     // create a lsp client and connect to server
-    // lsp_client *client = lsp_client_create(argv[1], port);
-    // if(!client){
-    //     printf("The connection to the server failed. Exiting...\n");
-    //     return -1;
-    // }
+    lsp_client *client = lsp_client_create(argv[1], port);
+    if(!client){
+        printf("The connection to the server failed. Exiting...\n");
+        return -1;
+    }
     
     //printf("The connection to the server has been established\n");
     
@@ -69,38 +57,19 @@ int main(int argc, char* argv[]){
     
     //printf("sending [%d]: %s\n", buflen, buffer);
     
-    char** result_1;
     // send password crack request to server
-    crackMessage crack_password_1_arg;
-    crack_password_1_arg.hash = (uint8_t*)buffer;
-    crack_password_1_arg.len = buflen+1;
-    result_1 = crack_password_1(&crack_password_1_arg, cl);
-    //check response
-    if (result_1 == NULL) {
-        clnt_perror(clnt, "call failed:");
-    }
-    else {
-        if(result_1[0] == 'x')
+    lsp_client_write(client,(uint8_t*)buffer,buflen+1);
+    int bytes_read = lsp_client_read(client,(uint8_t*)buffer);
+    if(bytes_read == 0){
+        printf("Disconnected\n");
+    } else {
+        if(buffer[0] == 'x')
             printf("Not Found\n");
-        else if (result_1[0] == 'f')
-            printf("Found: %s\n",result_1 + 2);
+        else if (buffer[0] == 'f')
+            printf("Found: %s\n",buffer + 2);
         else
-            printf("Unknown response: %s\n",result_1);
+            printf("Unknown response: %s\n",buffer);
     }
-    // lsp_client_write(client,(uint8_t*)buffer,buflen+1);
-    // int bytes_read = lsp_client_read(client,(uint8_t*)buffer);
-    // if(bytes_read == 0){
-    //     printf("Disconnected\n");
-    // } 
-    // else {
-    //     if(buffer[0] == 'x')
-    //         printf("Not Found\n");
-    //     else if (buffer[0] == 'f')
-    //         printf("Found: %s\n",buffer + 2);
-    //     else
-    //         printf("Unknown response: %s\n",buffer);
-    // }
-    // lsp_client_close(client);    
-    clnt_destroy( cl );
+    lsp_client_close(client);    
     return 0;
 }

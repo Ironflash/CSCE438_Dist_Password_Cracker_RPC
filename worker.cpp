@@ -1,9 +1,7 @@
 // John Keech, UIN 819000713, CSCE 438 HW2
 
-// #include "lsp_client.h"
+#include "lsp_client.h"
 #include <openssl/sha.h>
-#include <rpc/rpc.h>
-#include "cracker.h"
 
 void getNext(char *pass, int len){
     // given a current password, compute the next one to try and
@@ -93,69 +91,33 @@ int main(int argc, char* argv[]){
     //lsp_set_drop_rate(0.2); // 20% of packets dropped
     //lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
-
-    //Create the RCP client
-    CLIENT *cl = clnt_create(argv[1], cracker, 0,"tcp");
-    if (cl == NULL) 
-    {
-        clnt_pcreateerror(argv[1]);
-        exit(1);
+    
+    lsp_client *client = lsp_client_create(argv[1], port);
+    if(!client){
+        // the connection to the server could not be made
+        printf("The connection to the server failed. Exiting...\n");
+        return -1;
     }
-    // lsp_client *client = lsp_client_create(argv[1], port);
-    // if(!client){
-    //     // the connection to the server could not be made
-    //     printf("The connection to the server failed. Exiting...\n");
-    //     return -1;
-    // }
     
     printf("The connection to the server has been established\n");
     
     // send join message to the server
     char buffer[1024];
-    // sprintf(buffer,"j");
-    // lsp_client_write(client,(uint8_t*)buffer,2);
-    char* inform_available_1_arg;
-    char** result_1 = inform_available((void*)&inform_available_1_arg, cl);
+    sprintf(buffer,"j");
+    lsp_client_write(client,(uint8_t*)buffer,2);
 
     // wait for request chunks and then processes them
-    // while(int bytes_read = lsp_client_read(client,(uint8_t*)buffer)){
+    while(int bytes_read = lsp_client_read(client,(uint8_t*)buffer)){
         // we have received a crack request. let's parse it
-        // if(buffer[0] == 'c'){
-        //     char *hash = strtok(buffer+2," ");
-        //     int bufLen = 0;
-
-        //     // verify hash is valid
-        //     if(strlen(hash) != 40) {
-        //         printf("Invalid hash: %s\n",hash);
-        //         bufLen = sprintf(buffer,"x"); // send "not found" back to server
-        //         lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-        //         continue;
-        //     }
-
-        //     // grab start and end sequences
-        //     char *start = strtok(NULL, " ");
-        //     char *end = strtok(NULL, " ");
-            
-        //     char *pass = crack(hash,start,end);
-
-        //     // build response message
-        //     if(pass)
-        //         bufLen = sprintf(buffer,"f %s",pass);
-        //     else 
-        //         bufLen = sprintf(buffer, "x");
-
-        //     // send the response back to the server
-        //     lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-        if(result_1[0] == 'c'){
-            char *hash = strtok(result_1+2," ");
+        if(buffer[0] == 'c'){
+            char *hash = strtok(buffer+2," ");
             int bufLen = 0;
 
             // verify hash is valid
             if(strlen(hash) != 40) {
                 printf("Invalid hash: %s\n",hash);
                 bufLen = sprintf(buffer,"x"); // send "not found" back to server
-                // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-                deliver_result_1(&buffer, cl);
+                lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
                 continue;
             }
 
@@ -172,14 +134,12 @@ int main(int argc, char* argv[]){
                 bufLen = sprintf(buffer, "x");
 
             // send the response back to the server
-            // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-            deliver_result_1(&buffer, cl);
+            lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
         } else {
             printf("Unknown message format: %s\n",buffer); 
         }
     }
     // the connection to the server was lost
-    // lsp_client_close(client);    
-    clnt_destroy( cl );
+    lsp_client_close(client);    
     return 0;
 }
