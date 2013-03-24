@@ -6,41 +6,15 @@
 
 #include "cracker.h"
 
-char **
-crack_password_1_svc(crackMessage *argp, struct svc_req *rqstp)
+networkMessage *
+send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
 {
 
-	static char * result;
+	static networkMessage  result;
 
 	/*
 	 * insert server code here
 	 */
 
 	return(&result);
-}
-
-char **
-inform_available_1_svc(void *argp, struct svc_req *rqstp)
-{
-
-	static char * result;
-
-	/*
-	 * insert server code here
-	 */
-
-	return(&result);
-}
-
-void *
-deliver_result_1_svc(char **argp, struct svc_req *rqstp)
-{
-
-	static char* result;
-
-	/*
-	 * insert server code here
-	 */
-
-	return((void*) &result);
 }

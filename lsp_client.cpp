@@ -72,11 +72,11 @@ lsp_client* lsp_client_create(const char* dest, int port){
         
         // kick off ReadThread to catch incoming messages
         int res;
-        if((res = pthread_create(&(client->readThread), NULL, ClientReadThread, (void*)client)) != 0){
-            printf("Error: Failed to start the read thread: %d\n",res);
-            lsp_client_close(client);
-            return NULL;
-        }
+        // if((res = pthread_create(&(client->readThread), NULL, ClientReadThread, (void*)client)) != 0){
+        //     printf("Error: Failed to start the read thread: %d\n",res);
+        //     lsp_client_close(client);
+        //     return NULL;
+        // }
         if((res = pthread_create(&(client->writeThread), NULL, ClientWriteThread, (void*)client)) != 0){
             printf("Error: Failed to start the write thread: %d\n",res);
             lsp_client_close(client);
@@ -97,7 +97,8 @@ int lsp_client_read(lsp_client* a_client, uint8_t* pld){
     while(true){
         pthread_mutex_lock(&(a_client->mutex));
         Status s = a_client->connection->status;
-        LSPMessage *msg = NULL;
+        // LSPMessage *msg = NULL;
+        networkMessage *msg = NULL;
         if(s == CONNECTED) {
             // try to pop a message off of the inbox queue
             if(a_client->inbox.size() > 0){
@@ -136,7 +137,8 @@ bool lsp_client_write(lsp_client* a_client, uint8_t* pld, int lth){
     if(DEBUG) printf("Client queueing msg %d for write\n",a_client->connection->lastSentSeq);
     
     // build the message
-    LSPMessage *msg = network_build_message(a_client->connection->id,a_client->connection->lastSentSeq,pld,lth);
+    // LSPMessage *msg = network_build_message(a_client->connection->id,a_client->connection->lastSentSeq,pld,lth);
+    networkMessage *msg = network_build_message(a_client->connection->id,a_client->connection->lastSentSeq,pld,lth);
     
     // queue it up
     a_client->connection->outbox.push(msg);
@@ -207,60 +209,60 @@ void* ClientEpochThread(void *params){
     return NULL;
 }
 
-void* ClientReadThread(void *params){
-    lsp_client *client = (lsp_client*)params;
+// void* ClientReadThread(void *params){
+//     lsp_client *client = (lsp_client*)params;
     
-    // continuously poll for new messages and process them;
-    // Exit when the client is disconnected
-    while(true){
-        pthread_mutex_lock(&(client->mutex));
-        Status state = client->connection->status;
-        pthread_mutex_unlock(&(client->mutex));
+//     // continuously poll for new messages and process them;
+//     // Exit when the client is disconnected
+//     while(true){
+//         pthread_mutex_lock(&(client->mutex));
+//         Status state = client->connection->status;
+//         pthread_mutex_unlock(&(client->mutex));
         
-        if(state == DISCONNECTED)
-            break;
+//         if(state == DISCONNECTED)
+//             break;
         
-        // attempt to read
-        sockaddr_in addr;
-        LSPMessage *msg = network_read_message(client->connection, 0.5,&addr);
-        if(msg) {
-            if(msg->connid() == client->connection->id){
-                pthread_mutex_lock(&(client->mutex));
+//         // attempt to read
+//         sockaddr_in addr;
+//         LSPMessage *msg = network_read_message(client->connection, 0.5,&addr);
+//         if(msg) {
+//             if(msg->connid() == client->connection->id){
+//                 pthread_mutex_lock(&(client->mutex));
                 
-                // reset counter for epochs since we have received a message
-                client->connection->epochsSinceLastMessage = 0;
+//                 // reset counter for epochs since we have received a message
+//                 client->connection->epochsSinceLastMessage = 0;
                 
-                if(msg->payload().length() == 0){
-                    // we received an ACK
-                    if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum());
-                    if(msg->seqnum() == (client->connection->lastReceivedAck + 1)){
-                        // this sequence number is next in line, even if it overflows
-                        client->connection->lastReceivedAck = msg->seqnum();
-                    }
-                    if(client->connection->outbox.size() > 0 && msg->seqnum() == client->connection->outbox.front()->seqnum()) {
-                        delete client->connection->outbox.front();
-                        client->connection->outbox.pop();
-                    }
-                } else {
-                    // data packet
-                    if(DEBUG) printf("Client received msg %d\n",msg->seqnum());
-                    if(msg->seqnum() == (client->connection->lastReceivedSeq + 1)){
-                        // next in the list
-                        client->connection->lastReceivedSeq++;
-                        client->inbox.push(msg);
+//                 if(msg->payload().length() == 0){
+//                     // we received an ACK
+//                     if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum());
+//                     if(msg->seqnum() == (client->connection->lastReceivedAck + 1)){
+//                         // this sequence number is next in line, even if it overflows
+//                         client->connection->lastReceivedAck = msg->seqnum();
+//                     }
+//                     if(client->connection->outbox.size() > 0 && msg->seqnum() == client->connection->outbox.front()->seqnum()) {
+//                         delete client->connection->outbox.front();
+//                         client->connection->outbox.pop();
+//                     }
+//                 } else {
+//                     // data packet
+//                     if(DEBUG) printf("Client received msg %d\n",msg->seqnum());
+//                     if(msg->seqnum() == (client->connection->lastReceivedSeq + 1)){
+//                         // next in the list
+//                         client->connection->lastReceivedSeq++;
+//                         client->inbox.push(msg);
                         
-                        // send ack for this message
-                        network_acknowledge(client->connection);
-                    }
-                }
+//                         // send ack for this message
+//                         network_acknowledge(client->connection);
+//                     }
+//                 }
                 
-                pthread_mutex_unlock(&(client->mutex));
-            }
-        }
-    }
-    if(DEBUG) printf("Read Thread exiting\n");
-    return NULL;
-}
+//                 pthread_mutex_unlock(&(client->mutex));
+//             }
+//         }
+//     }
+//     if(DEBUG) printf("Read Thread exiting\n");
+//     return NULL;
+// }
 
 // this write thread will ensure that messages can be sent/received faster than only
 // on epoch boundaries. It will continuously poll for messages that are eligible to
@@ -285,7 +287,43 @@ void* ClientWriteThread(void *params){
             // we have received an ack for the last message, and we haven't sent the
             // next one out yet, so if it exists, let's send it now
             if(client->connection->outbox.size() > 0) {
-                network_send_message(client->connection,client->connection->outbox.front());
+                networkMessage* msg = network_send_message(client->connection,client->connection->outbox.front());
+                /* analyze the return from server */
+                 if(msg) {
+                    if(msg->connid() == client->connection->id){
+                        pthread_mutex_lock(&(client->mutex));
+                        
+                        // reset counter for epochs since we have received a message
+                        client->connection->epochsSinceLastMessage = 0;
+                        
+                        if(msg->payload().length() == 0){
+                            // we received an ACK
+                            if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum());
+                            if(msg->seqnum() == (client->connection->lastReceivedAck + 1)){
+                                // this sequence number is next in line, even if it overflows
+                                client->connection->lastReceivedAck = msg->seqnum();
+                            }
+                            if(client->connection->outbox.size() > 0 && msg->seqnum() == client->connection->outbox.front()->seqnum()) {
+                                delete client->connection->outbox.front();
+                                client->connection->outbox.pop();
+                            }
+                        } else {
+                            // data packet
+                            if(DEBUG) printf("Client received msg %d\n",msg->seqnum());
+                            if(msg->seqnum() == (client->connection->lastReceivedSeq + 1)){
+                                // next in the list
+                                client->connection->lastReceivedSeq++;
+                                client->inbox.push(msg);
+                                
+                                // send ack for this message
+                                network_acknowledge(client->connection);
+                            }
+                        }
+                        
+                        pthread_mutex_unlock(&(client->mutex));
+                    }
+                }
+                /* done analyzing */
                 lastSent = client->connection->outbox.front()->seqnum();
             }                
         }
@@ -317,9 +355,10 @@ void cleanup_connection(Connection *s){
         return;
 
     // close the file descriptor and free memory
-    if(s->fd != -1)
-        close(s->fd);
-    delete s->addr;
+    // if(s->fd != -1)
+    //     close(s->fd);
+    // delete s->addr;
+    delete s->clnt;
     delete s;
 }
     

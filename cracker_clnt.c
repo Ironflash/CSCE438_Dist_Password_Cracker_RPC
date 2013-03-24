@@ -9,35 +9,13 @@
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
 
-char **
-crack_password_1(crackMessage *argp, CLIENT *clnt)
+networkMessage *
+send_message_1(networkMessage *argp, CLIENT *clnt)
 {
-	static char *clnt_res;
+	static networkMessage clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call(clnt, crack_password, xdr_crackMessage, argp, xdr_wrapstring, &clnt_res, TIMEOUT) != RPC_SUCCESS)
+	if (clnt_call(clnt, send_message, xdr_networkMessage, argp, xdr_networkMessage, &clnt_res, TIMEOUT) != RPC_SUCCESS)
 		return (NULL);
 	return (&clnt_res);
-}
-
-char **
-inform_available_1(void *argp, CLIENT *clnt)
-{
-	static char *clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call(clnt, inform_available, xdr_void, argp, xdr_wrapstring, &clnt_res, TIMEOUT) != RPC_SUCCESS)
-		return (NULL);
-	return (&clnt_res);
-}
-
-void *
-deliver_result_1(char **argp, CLIENT *clnt)
-{
-	static char clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call(clnt, deliver_result, xdr_wrapstring, argp, xdr_void, &clnt_res, TIMEOUT) != RPC_SUCCESS)
-		return (NULL);
-	return ((void *)&clnt_res);
 }

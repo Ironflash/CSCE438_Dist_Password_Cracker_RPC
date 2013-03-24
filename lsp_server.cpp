@@ -69,11 +69,11 @@ lsp_server* lsp_server_create(int port){
         lsp_server_close(server,0);
         return NULL;
     } 
-    if((res = pthread_create(&(server->writeThread), NULL, ServerWriteThread, (void*)server)) != 0){
-        printf("Error: Failed to start the write thread: %d\n",res);
-        lsp_server_close(server,0);
-        return NULL;
-    }
+    // if((res = pthread_create(&(server->writeThread), NULL, ServerWriteThread, (void*)server)) != 0){
+    //     printf("Error: Failed to start the write thread: %d\n",res);
+    //     lsp_server_close(server,0);
+    //     return NULL;
+    // }
     
     return server;
 }
@@ -311,46 +311,46 @@ void* ServerReadThread(void *params){
 // this write thread will ensure that messages can be sent/received faster than only
 // on epoch boundaries. It will continuously poll for messages that are eligible to
 // bet sent for the first time, and then send them out.
-void* ServerWriteThread(void *params){
-    lsp_server *server = (lsp_server*)params;
+// void* ServerWriteThread(void *params){
+//     lsp_server *server = (lsp_server*)params;
     
-    // continuously poll for new messages to send
+//     // continuously poll for new messages to send
     
-    // store the last sent seq number for each client so that
-    // we only send each message once
-    std::map<unsigned int, unsigned int> lastSent;  
+//     // store the last sent seq number for each client so that
+//     // we only send each message once
+//     std::map<unsigned int, unsigned int> lastSent;  
     
-    while(true){     
-        pthread_mutex_lock(&(server->mutex));
-        if(!server->running)
-            break;
+//     while(true){     
+//         pthread_mutex_lock(&(server->mutex));
+//         if(!server->running)
+//             break;
             
-        // iterate through all clients and see if they have messages to send
-        for(std::map<unsigned int,Connection*>::iterator it=server->clients.begin();
-            it != server->clients.end();
-            ++it){
+//         // iterate through all clients and see if they have messages to send
+//         for(std::map<unsigned int,Connection*>::iterator it=server->clients.begin();
+//             it != server->clients.end();
+//             ++it){
            
-            Connection *conn = it->second;
+//             Connection *conn = it->second;
             
-            if(conn->status == DISCONNECTED)
-                continue;
+//             if(conn->status == DISCONNECTED)
+//                 continue;
             
-            unsigned int nextToSend = conn->lastReceivedAck + 1;
-            if(nextToSend > lastSent[conn->id]){
-                // we have received an ack for the last message, and we haven't sent the
-                // next one out yet, so if it exists, let's send it now
-                if(conn->outbox.size() > 0) {
-                    network_send_message(conn,conn->outbox.front());
-                    lastSent[conn->id] = conn->outbox.front()->seqnum();
-                }                
-            }
-        }
-        pthread_mutex_unlock(&(server->mutex));
-        usleep(5000); // 5ms
-    }
-    pthread_mutex_unlock(&(server->mutex));
-    return NULL;
-}
+//             unsigned int nextToSend = conn->lastReceivedAck + 1;
+//             if(nextToSend > lastSent[conn->id]){
+//                 // we have received an ack for the last message, and we haven't sent the
+//                 // next one out yet, so if it exists, let's send it now
+//                 if(conn->outbox.size() > 0) {
+//                     network_send_message(conn,conn->outbox.front());
+//                     lastSent[conn->id] = conn->outbox.front()->seqnum();
+//                 }                
+//             }
+//         }
+//         pthread_mutex_unlock(&(server->mutex));
+//         usleep(5000); // 5ms
+//     }
+//     pthread_mutex_unlock(&(server->mutex));
+//     return NULL;
+// }
 
 void cleanup_connection(Connection *s){
     if(!s)

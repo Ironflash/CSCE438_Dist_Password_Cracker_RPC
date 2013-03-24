@@ -11,55 +11,38 @@
 #include <rpc/rpc.h>
 
 
-struct crackMessage {
-	uint8_t *hash;
-	int len;
+struct networkMessage {
+	uint8_t connid;
+	uint8_t seqnum;
+	uint8_t *payload;
 };
-typedef struct crackMessage crackMessage;
+typedef struct networkMessage networkMessage;
 #ifdef __cplusplus
-extern "C" bool_t xdr_crackMessage(XDR *, crackMessage*);
+extern "C" bool_t xdr_networkMessage(XDR *, networkMessage*);
 #elif __STDC__
-extern  bool_t xdr_crackMessage(XDR *, crackMessage*);
+extern  bool_t xdr_networkMessage(XDR *, networkMessage*);
 #else /* Old Style C */
-bool_t xdr_crackMessage();
+bool_t xdr_networkMessage();
 #endif /* Old Style C */
 
 
 #define cracker ((rpc_uint)0x20000099)
-#define 0 ((rpc_uint)1)
+// #define 0 ((rpc_uint)1)
 
 #ifdef __cplusplus
-#define crack_password ((rpc_uint)1)
-extern "C" char ** crack_password_1(crackMessage *, CLIENT *);
-extern "C" char ** crack_password_1_svc(crackMessage *, struct svc_req *);
-#define inform_available ((rpc_uint)2)
-extern "C" char ** inform_available_1(void *, CLIENT *);
-extern "C" char ** inform_available_1_svc(void *, struct svc_req *);
-#define deliver_result ((rpc_uint)3)
-extern "C" void * deliver_result_1(char **, CLIENT *);
-extern "C" void * deliver_result_1_svc(char **, struct svc_req *);
+#define send_message ((rpc_uint)1)
+extern "C" networkMessage * send_message_1(networkMessage *, CLIENT *);
+extern "C" networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
 
 #elif __STDC__
-#define crack_password ((rpc_uint)1)
-extern  char ** crack_password_1(crackMessage *, CLIENT *);
-extern  char ** crack_password_1_svc(crackMessage *, struct svc_req *);
-#define inform_available ((rpc_uint)2)
-extern  char ** inform_available_1(void *, CLIENT *);
-extern  char ** inform_available_1_svc(void *, struct svc_req *);
-#define deliver_result ((rpc_uint)3)
-extern  void * deliver_result_1(char **, CLIENT *);
-extern  void * deliver_result_1_svc(char **, struct svc_req *);
+#define send_message ((rpc_uint)1)
+extern  networkMessage * send_message_1(networkMessage *, CLIENT *);
+extern  networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
 
 #else /* Old Style C */
-#define crack_password ((rpc_uint)1)
-extern  char ** crack_password_1();
-extern  char ** crack_password_1_svc();
-#define inform_available ((rpc_uint)2)
-extern  char ** inform_available_1();
-extern  char ** inform_available_1_svc();
-#define deliver_result ((rpc_uint)3)
-extern  void * deliver_result_1();
-extern  void * deliver_result_1_svc();
+#define send_message ((rpc_uint)1)
+extern  networkMessage * send_message_1();
+extern  networkMessage * send_message_1_svc();
 #endif /* Old Style C */
 
 #endif /* !_CRACKER_H_RPCGEN */

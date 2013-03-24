@@ -6,12 +6,14 @@
 #include "cracker.h"
 
 bool_t
-xdr_crackMessage(XDR *xdrs, crackMessage *objp)
+xdr_networkMessage(XDR *xdrs, networkMessage *objp)
 {
 
-	if (!xdr_pointer(xdrs, (char **)&objp->hash, sizeof(uint8_t), (xdrproc_t)xdr_uint8_t))
+	if (!xdr_uint8_t(xdrs, &objp->connid))
 		return (FALSE);
-	if (!xdr_int(xdrs, &objp->len))
+	if (!xdr_uint8_t(xdrs, &objp->seqnum))
+		return (FALSE);
+	if (!xdr_pointer(xdrs, (char **)&objp->payload, sizeof(uint8_t), (xdrproc_t)xdr_uint8_t))
 		return (FALSE);
 	return (TRUE);
 }

@@ -78,8 +78,7 @@ static void
 cracker_1(struct svc_req *rqstp, SVCXPRT *transp)
 {
 	union {
-		crackMessage crack_password_1_arg;
-		char *deliver_result_1_arg;
+		networkMessage send_message_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t xdr_argument, xdr_result;
@@ -92,22 +91,10 @@ cracker_1(struct svc_req *rqstp, SVCXPRT *transp)
 		_rpcsvcdirty = 0;
 		return;
 
-	case crack_password:
-		xdr_argument = (xdrproc_t) xdr_crackMessage;
-		xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) crack_password_1_svc;
-		break;
-
-	case inform_available:
-		xdr_argument = (xdrproc_t) xdr_void;
-		xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) inform_available_1_svc;
-		break;
-
-	case deliver_result:
-		xdr_argument = (xdrproc_t) xdr_wrapstring;
-		xdr_result = (xdrproc_t) xdr_void;
-		local = (char *(*)(char *, struct svc_req *)) deliver_result_1_svc;
+	case send_message:
+		xdr_argument = (xdrproc_t) xdr_networkMessage;
+		xdr_result = (xdrproc_t) xdr_networkMessage;
+		local = (char *(*)(char *, struct svc_req *)) send_message_1_svc;
 		break;
 
 	default:

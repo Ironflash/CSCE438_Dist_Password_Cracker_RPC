@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "cracker.h"
 #include "lspmessage.pb.h"
 
 typedef enum {
@@ -28,8 +29,9 @@ typedef enum {
 typedef struct {
     const char              *host;
     unsigned int            port;
-    int                     fd;
-    struct sockaddr_in      *addr;
+    // int                     fd;
+    // struct sockaddr_in      *addr;
+    CLIENT*                 client;
     Status                  status;
     unsigned int            id;
     unsigned int            lastSentSeq;
