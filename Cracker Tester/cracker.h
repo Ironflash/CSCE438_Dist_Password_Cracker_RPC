@@ -26,8 +26,8 @@ bool_t xdr_networkMessage();
 #endif /* Old Style C */
 
 
-#define cracker ((rpc_uint)0x33301138)
-#define 0 ((rpc_uint)1)
+#define CRACKER_PROG ((rpc_uint)0x33301138)
+#define CRACKER_VERS ((rpc_uint)1)
 
 #ifdef __cplusplus
 #define send_message ((rpc_uint)1)

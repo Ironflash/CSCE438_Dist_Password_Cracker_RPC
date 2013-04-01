@@ -8,7 +8,7 @@ typedef struct {
     Connection              *connection;
     std::map<unsigned int,Connection*> clients;
     std::set<std::string>   connections;
-    std::queue<LSPMessage*> inbox;
+    std::queue<networkMessage*> inbox;
     pthread_mutex_t         mutex;
     pthread_t               readThread;
     pthread_t               writeThread;
@@ -17,13 +17,14 @@ typedef struct {
 
 // API Methods
 lsp_server* lsp_server_create(int port);
-int  lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id);
+//int  lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id);
 bool lsp_server_write(lsp_server* a_srv, void* pld, int lth, uint32_t conn_id);
 bool lsp_server_close(lsp_server* a_srv, uint32_t conn_id);
 
 // Internal Methods
 void* ServerEpochThread(void *params);
-void* ServerReadThread(void *params);
+//void* ServerReadThread(void *params); //RPC handles reads by getting the return on a write
+
 void* ServerWriteThread(void *params);
 void cleanup_connection(Connection *s);
 

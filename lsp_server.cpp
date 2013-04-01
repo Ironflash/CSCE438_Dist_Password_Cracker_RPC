@@ -64,11 +64,14 @@ lsp_server* lsp_server_create(int port){
     }
         
     // create the read/write threads listening on a certain port
+    /*
     if((res = pthread_create(&(server->readThread), NULL, ServerReadThread, (void*)server)) != 0){
         printf("Error: Failed to start the epoch thread: %d\n",res);
         lsp_server_close(server,0);
         return NULL;
     } 
+    //*/
+
     // if((res = pthread_create(&(server->writeThread), NULL, ServerWriteThread, (void*)server)) != 0){
     //     printf("Error: Failed to start the write thread: %d\n",res);
     //     lsp_server_close(server,0);
@@ -80,12 +83,13 @@ lsp_server* lsp_server_create(int port){
 
 // Read from connection. Return NULL when connection lost
 // Returns number of bytes read. conn_id is an output parameter
+/*
 int lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id){
     // block until a message arrives or the client becomes disconnected
     while(true){
         pthread_mutex_lock(&(a_srv->mutex));
         bool running = a_srv->running;
-        LSPMessage *msg = NULL;
+        networkMessage *msg = NULL;
         if(running) {
             // try to pop a message from the inbox queue
             if(a_srv->inbox.size() > 0){
@@ -98,7 +102,7 @@ int lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id){
             break;
         if(msg){
             // we got a message, return it
-            std::string payload = msg->payload();
+            std::string payload = msg->payload;
             *conn_id = msg->connid();
             delete msg;
             memcpy(pld,payload.c_str(),payload.length()+1);
@@ -112,6 +116,7 @@ int lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id){
     *conn_id = 0; // all clients are disconnected
     return 0; // NULL, no bytes read (all clients disconnected)
 }
+//*/
 
 // Server Write. Should not send NULL
 bool lsp_server_write(lsp_server* a_srv, void* pld, int lth, uint32_t conn_id){
@@ -124,7 +129,7 @@ bool lsp_server_write(lsp_server* a_srv, void* pld, int lth, uint32_t conn_id){
     if(DEBUG) printf("Server queueing msg %d for conn %d for write\n",conn->lastSentSeq,conn->id);
     
     // build the message object
-    LSPMessage *msg = network_build_message(conn->id,conn->lastSentSeq,(uint8_t*)pld,lth);
+    networkMessage *msg = network_build_message(conn->id,conn->lastSentSeq,(uint8_t*)pld,lth);
     
     // queue it up for writing
     conn->outbox.push(msg);
@@ -165,7 +170,7 @@ bool lsp_server_close(lsp_server* a_srv, uint32_t conn_id){
         // close one connection
         if(DEBUG) printf("Shutting down client %d\n",conn_id);
         Connection *conn = a_srv->clients[conn_id];
-        delete conn->addr;
+        //delete conn->addr; //remove socket related items
         delete conn;        
         a_srv->clients.erase(conn_id);
     }
@@ -202,7 +207,7 @@ void* ServerEpochThread(void *params){
             
             // resend the first message in the outbox, if any
             if(conn->outbox.size() > 0) {
-                if(DEBUG) printf("Server resending msg %d for conn %d\n",conn->outbox.front()->seqnum(),conn->id);
+                if(DEBUG) printf("Server resending msg %d for conn %d\n",conn->outbox.front()->seqnum,conn->id);
                 network_send_message(conn,conn->outbox.front());
             }
             
@@ -224,6 +229,7 @@ void* ServerEpochThread(void *params){
     return NULL;
 }
 
+/*
 void* ServerReadThread(void *params){
     // continously attempt to read messages from the socket. When one arrives, parse it
     // and take the appropriate action
@@ -307,6 +313,7 @@ void* ServerReadThread(void *params){
     if(DEBUG) printf("Read Thread exiting\n");
     return NULL;
 }
+//*/
 
 // this write thread will ensure that messages can be sent/received faster than only
 // on epoch boundaries. It will continuously poll for messages that are eligible to
@@ -357,9 +364,11 @@ void cleanup_connection(Connection *s){
         return;
 
     // close the file descriptor and free memory
+    /*
     if(s->fd != -1)
         close(s->fd);
     delete s->addr;
+    //*/
     delete s;
 }
 

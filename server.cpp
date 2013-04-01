@@ -97,11 +97,12 @@ int main(int argc, char* argv[]){
     
     while(true){
         // wait for data from clients
-        bytes_read = lsp_server_read(server,payload,&returned_id);/* NON RPC */
+        /*
+        bytes_read = lsp_server_read(server,payload,&returned_id); // NON RPC
         
         // if bytes_read > 0 then there is data to be read
         // if bytes_read == 0 then a client disconnected
-        if(bytes_read) {/* NON RPC */
+        if(bytes_read) { // NON RPC
             printf("[%d]: %s\n",returned_id, payload);
             if(payload[0] == 'j') { // worker joined the server
                 inactive_workers.push(returned_id); // add to inactive_workers
@@ -296,6 +297,7 @@ int main(int argc, char* argv[]){
                 }
             }
         }
+        //*/
     }        
     return 0;
 }

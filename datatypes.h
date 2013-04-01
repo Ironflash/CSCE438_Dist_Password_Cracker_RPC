@@ -20,7 +20,7 @@
 #include <unistd.h>
 
 #include "cracker.h"
-#include "lspmessage.pb.h"
+//#include "lspmessage.pb.h" //remove protobuf
 
 typedef enum {
     DISCONNECTED, CONNECT_SENT, CONNECTED
@@ -38,7 +38,7 @@ typedef struct {
     unsigned int            lastReceivedSeq;
     unsigned int            lastReceivedAck;
     unsigned int            epochsSinceLastMessage;
-    std::queue<LSPMessage*> outbox;
+    std::queue<networkMessage*> outbox;
 } Connection;
 
 #endif
