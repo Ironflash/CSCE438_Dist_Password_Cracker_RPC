@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "cracker.h"
+#include "strings.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -91,9 +91,9 @@ cracker_prog_1(struct svc_req *rqstp, SVCXPRT *transp)
 		_rpcsvcdirty = 0;
 		return;
 
-	case SEND_MESSAGE:
+	case send_message:
 		xdr_argument = (xdrproc_t) xdr_networkMessage;
-		xdr_result = (xdrproc_t) xdr_networkMessage;
+		xdr_result = (xdrproc_t) xdr_wrapstring;
 		local = (char *(*)(char *, struct svc_req *)) send_message_1_svc;
 		break;
 
@@ -143,7 +143,7 @@ main( int argc, char* argv[] )
 		sock = 0;
 		_rpcpmstart = 1;
 		proto = 0;
-		openlog("cracker", LOG_PID, LOG_DAEMON);
+		openlog("strings", LOG_PID, LOG_DAEMON);
 	} else {
 #ifndef RPC_SVC_FG
 		int size;
@@ -167,7 +167,7 @@ main( int argc, char* argv[] )
 			(void) ioctl(i, TIOCNOTTY, (char *)NULL);
 			(void) close(i);
 		}
-		openlog("cracker", LOG_PID, LOG_DAEMON);
+		openlog("strings", LOG_PID, LOG_DAEMON);
 #endif
 		sock = RPC_ANYSOCK;
 		(void) pmap_unset(CRACKER_PROG, CRACKER_VERS);

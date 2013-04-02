@@ -7,6 +7,8 @@
 
 #define _DROP_RATE 0.0
 
+networkMessage* send_message_1_svc(networkMessage *argp, struct svc_req *rqstp);
+
 // build a socket and try to connect
 Connection* network_setup_server(int port);
 Connection* network_make_connection(const char *host, int port);
@@ -23,7 +25,7 @@ networkMessage* network_acknowledge(Connection *conn); // send an acknowledgemen
 
 // Marshal/unmarshal data using Google Protocol Buffers
 // LSPMessage* network_build_message(int is, int seq, uint8_t *pld, int len);
-networkMessage* network_build_message(int is, int seq, uint8_t *pld, int len);
+networkMessage* network_build_message(int is, int seq, char *pld, int len);
 // uint8_t* network_marshal(LSPMessage *msg, int *packedSize);
 // LSPMessage* network_unmarshal(uint8_t *buf, int buf_len);
 

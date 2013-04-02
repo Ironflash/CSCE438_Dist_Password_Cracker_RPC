@@ -12,9 +12,14 @@ send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
 
 	static networkMessage  result;
 
-	/*
-	 * insert server code here
-	 */
+	result.connid = 0;
+	result.seqnum = 0;
+	result.payload = "this goes back";
+
+	printf("incoming string: \"%s\"\n", argp->payload);
+	printf("incoming connid: %d\n", argp->connid);
+	printf("incoming seqnum: %d\n", argp->seqnum);
+	printf("returning string: %d\n", result.payload);
 
 	return(&result);
 }

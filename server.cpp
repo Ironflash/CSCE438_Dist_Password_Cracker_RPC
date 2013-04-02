@@ -10,6 +10,7 @@ typedef struct {
     char *upper;
 } request;
 
+/*
 request* divide_req(request *req, int req_size) {
    req_size--;
    
@@ -76,9 +77,9 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     // create a server
-    lsp_server *server = lsp_server_create(atoi(argv[1]));/* NON RPC */
-    if(!server)/* NON RPC */
-        return -1;/* NON RPC */
+    lsp_server *server = lsp_server_create(atoi(argv[1]));// NON RPC
+    if(!server)// NON RPC
+        return -1;// NON RPC
 
     // keeps track of available worker who are not currently wrokinrg
     std::queue<uint32_t> inactive_workers; 
@@ -297,7 +298,7 @@ int main(int argc, char* argv[]){
                 }
             }
         }
-        //*/
     }        
     return 0;
 }
+//*/

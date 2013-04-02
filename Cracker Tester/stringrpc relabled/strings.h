@@ -3,8 +3,8 @@
  * It was generated using rpcgen.
  */
 
-#ifndef _CRACKER_H_RPCGEN
-#define _CRACKER_H_RPCGEN
+#ifndef _STRINGS_H_RPCGEN
+#define _STRINGS_H_RPCGEN
 
 #define RPCGEN_VERSION	199506
 
@@ -12,9 +12,10 @@
 
 
 struct networkMessage {
-	int connid;
-	int seqnum;
-	char *payload;
+	char *name;
+	int val;
+	u_int seqnum;
+	u_int *payload;
 };
 typedef struct networkMessage networkMessage;
 #ifdef __cplusplus
@@ -26,23 +27,23 @@ bool_t xdr_networkMessage();
 #endif /* Old Style C */
 
 
-#define CRACKER_PROG ((rpc_uint)0x33301138)
+#define CRACKER_PROG ((rpc_uint)0x33381138)
 #define CRACKER_VERS ((rpc_uint)1)
 
 #ifdef __cplusplus
 #define send_message ((rpc_uint)1)
-extern "C" networkMessage * send_message_1(networkMessage *, CLIENT *);
-extern "C" networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
+extern "C" char ** send_message_1(networkMessage *, CLIENT *);
+extern "C" char ** send_message_1_svc(networkMessage *, struct svc_req *);
 
 #elif __STDC__
 #define send_message ((rpc_uint)1)
-extern  networkMessage * send_message_1(networkMessage *, CLIENT *);
-extern  networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
+extern  char ** send_message_1(networkMessage *, CLIENT *);
+extern  char ** send_message_1_svc(networkMessage *, struct svc_req *);
 
 #else /* Old Style C */
 #define send_message ((rpc_uint)1)
-extern  networkMessage * send_message_1();
-extern  networkMessage * send_message_1_svc();
+extern  char ** send_message_1();
+extern  char ** send_message_1_svc();
 #endif /* Old Style C */
 
-#endif /* !_CRACKER_H_RPCGEN */
+#endif /* !_STRINGS_H_RPCGEN */

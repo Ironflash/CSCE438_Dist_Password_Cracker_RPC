@@ -1,0 +1,51 @@
+TARGET = server request worker
+DEBUG = -g
+CFLAGS = -Wall $(DEBUG) -DRPC_SVC_FG
+LFLAGS = $(DEBUG)
+LIBS = #-lpthread -lssl -lcrypto
+
+all: $(TARGET)
+
+request: lsp_client.o network.o
+	$(CC) $(LFLAGS) -o $@ $@.cpp $^ $(LIBS)
+
+worker: lsp_client.o network.o
+	$(CC) $(LFLAGS) -o $@ $@.cpp $^ $(LIBS)
+
+server: lsp_server.o network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+	g++ $(LFLAGS) -o server server.cpp lsp_server.o network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+
+network: network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+	g++ $(LFLAGS) network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+
+lsp_server.o: lsp_server.cpp cracker.h
+	g++ $(CFLAGS) -c lsp_server.cpp
+
+network.o: network.cpp cracker.h
+	g++ $(CFLAGS) -c network.cpp
+
+cracker_client: cracker_client.o cracker_clnt.o cracker_xdr.o
+	g++ -o cracker_client cracker_client.o cracker_clnt.o cracker_xdr.o
+
+cracker_server: cracker_server.o cracker_svc.o cracker_xdr.o
+	g++ -o cracker_server cracker_server.o cracker_svc.o cracker_xdr.o
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) $<
+
+cracker_svc.o: cracker.h
+	$(CC) $(CFLAGS) -c cracker_svc.c
+
+cracker_clnt.o: cracker.h
+	$(CC) $(CFLAGS) -c cracker_clnt.c
+
+cracker_xdr.o: cracker.h
+	$(CC) $(CFLAGS) -c cracker_xdr.c
+
+cracker.h: cracker.x
+	rpcgen -C cracker.x
+
+clean:
+	rm -f *.o 
+	rm -f $(TARGET)
+	rm -f client client.o server server.o cracker_xdr.* cracker_clnt.* cracker_svc.* cracker.h cracker_client cracker_server

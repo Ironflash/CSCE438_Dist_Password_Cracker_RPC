@@ -7,6 +7,24 @@ double drop_rate = _DROP_RATE;
 
 #define PACKET_SIZE 2048
 
+networkMessage *
+send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
+{
+
+    static networkMessage  result;
+
+    result.connid = 0;
+    result.seqnum = 0;
+    result.payload = "this goes back";
+
+    printf("incoming string: \"%s\"\n", argp->payload);
+    printf("incoming connid: %d\n", argp->connid);
+    printf("incoming seqnum: %d\n", argp->seqnum);
+    printf("returning string: %d\n", result.payload);
+
+    return(&result);
+}
+
 Connection* network_setup_server(int port){
     Connection *conn = new Connection();
     
@@ -72,7 +90,11 @@ Connection* network_make_connection(const char *host, int port){
     //     memcpy(&addr.sin_addr, hostp->h_addr, sizeof(addr.sin_addr));
     // }
     /* Create the RPC client */
-    CLIENT* clnt = clnt_create(server, cracker, 0, "udp");
+    CLIENT* clnt = clnt_create(server, CRACKER_PROG, CRACKER_VERS, "udp");
+    if (clnt == NULL) {
+        clnt_pcreateerror(server);
+        exit(1);
+    }
     // the socket was built successfully, so now copy that info to the connection object
     Connection *c = new Connection();
     // c->fd = sd;
@@ -188,7 +210,7 @@ networkMessage* network_send_message(Connection *conn, networkMessage *msg){
 // }
 
 // LSPMessage* network_build_message(int id, int seq, uint8_t *pld, int len){
-networkMessage* network_build_message(int id, int seq, uint8_t *pld, int len){
+networkMessage* network_build_message(int id, int seq, char *pld, int len){
     // create the LSPMessage data structure and fill it in
     
     // LSPMessage *msg = new LSPMessage();

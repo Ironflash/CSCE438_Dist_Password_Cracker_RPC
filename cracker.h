@@ -12,9 +12,9 @@
 
 
 struct networkMessage {
-	uint8_t connid;
-	uint8_t seqnum;
-	uint8_t *payload;
+	int connid;
+	int seqnum;
+	char *payload;
 };
 typedef struct networkMessage networkMessage;
 #ifdef __cplusplus
@@ -26,21 +26,21 @@ bool_t xdr_networkMessage();
 #endif /* Old Style C */
 
 
-#define cracker ((rpc_uint)0x33301138)
-#define 0 ((rpc_uint)1)
+#define CRACKER_PROG ((rpc_uint)0x33301138)
+#define CRACKER_VERS ((rpc_uint)1)
 
 #ifdef __cplusplus
-#define send_message ((rpc_uint)1)
+#define SEND_MESSAGE ((rpc_uint)1)
 extern "C" networkMessage * send_message_1(networkMessage *, CLIENT *);
 extern "C" networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
 
 #elif __STDC__
-#define send_message ((rpc_uint)1)
+#define SEND_MESSAGE ((rpc_uint)1)
 extern  networkMessage * send_message_1(networkMessage *, CLIENT *);
 extern  networkMessage * send_message_1_svc(networkMessage *, struct svc_req *);
 
 #else /* Old Style C */
-#define send_message ((rpc_uint)1)
+#define SEND_MESSAGE ((rpc_uint)1)
 extern  networkMessage * send_message_1();
 extern  networkMessage * send_message_1_svc();
 #endif /* Old Style C */
