@@ -1,6 +1,6 @@
 // John Keech, UIN 819000713, CSCE 438 HW2
 
-// #include "lsp_client.h"
+#include "lsp_client.h"
 #include <openssl/sha.h>
 #include <rpc/rpc.h>
 #include "cracker.h"
@@ -95,7 +95,8 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
 
     //Create the RCP client
-    CLIENT *cl = clnt_create(argv[1], cracker, 0,"tcp");
+    char type[] = "udp";
+    CLIENT *cl = clnt_create(argv[1], CRACKER_PROG, CRACKER_VERS, type);
     if (cl == NULL) 
     {
         clnt_pcreateerror(argv[1]);
@@ -111,11 +112,12 @@ int main(int argc, char* argv[]){
     printf("The connection to the server has been established\n");
     
     // send join message to the server
-    char buffer[1024];
+    networkMessage* buffer;
     // sprintf(buffer,"j");
     // lsp_client_write(client,(uint8_t*)buffer,2);
-    char* inform_available_1_arg;
-    char** result_1 = inform_available((void*)&inform_available_1_arg, cl);
+    networkMessage* inform_available_1_arg;
+    networkMessage* result_1;
+    result_1 = send_message_1(inform_available_1_arg, cl);
 
     // wait for request chunks and then processes them
     // while(int bytes_read = lsp_client_read(client,(uint8_t*)buffer)){
@@ -146,17 +148,17 @@ int main(int argc, char* argv[]){
 
         //     // send the response back to the server
         //     lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-        if(result_1[0] == 'c'){
-            char *hash = strtok(result_1+2," ");
+        if(result_1->payload[0] == 'c'){
+            char *hash = strtok(result_1->payload+2," ");
             int bufLen = 0;
 
             // verify hash is valid
             if(strlen(hash) != 40) {
                 printf("Invalid hash: %s\n",hash);
-                bufLen = sprintf(buffer,"x"); // send "not found" back to server
+                bufLen = sprintf(buffer->payload,"x"); // send "not found" back to server
                 // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-                deliver_result_1(&buffer, cl);
-                continue;
+                send_message_1(buffer, cl);
+                //continue;
             }
 
             // grab start and end sequences
@@ -167,17 +169,17 @@ int main(int argc, char* argv[]){
 
             // build response message
             if(pass)
-                bufLen = sprintf(buffer,"f %s",pass);
+                bufLen = sprintf(buffer->payload,"f %s",pass);
             else 
-                bufLen = sprintf(buffer, "x");
+                bufLen = sprintf(buffer->payload, "x");
 
             // send the response back to the server
             // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-            deliver_result_1(&buffer, cl);
+            send_message_1(buffer, cl);
         } else {
-            printf("Unknown message format: %s\n",buffer); 
+            printf("Unknown message format: %s\n",buffer->payload); 
         }
-    }
+    //}
     // the connection to the server was lost
     // lsp_client_close(client);    
     clnt_destroy( cl );

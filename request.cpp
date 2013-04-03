@@ -1,5 +1,5 @@
 #include <iostream>
-// #include "lsp_client.h"
+#include "lsp_client.h"
 #include <rpc/rpc.h>
 #include "cracker.h"
 
@@ -39,7 +39,8 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     //Create the client
-    CLIENT *cl = clnt_create(argv[1], cracker, 0,"tcp");
+    char type[] = "udp";
+    CLIENT *cl = clnt_create(argv[1], CRACKER_PROG, CRACKER_VERS,type);
     if (cl == NULL) 
     {
         clnt_pcreateerror(argv[1]);
@@ -69,20 +70,20 @@ int main(int argc, char* argv[]){
     
     //printf("sending [%d]: %s\n", buflen, buffer);
     
-    char** result_1;
+    networkMessage* result_1;
     // send password crack request to server
-    crackMessage crack_password_1_arg;
-    crack_password_1_arg.hash = (uint8_t*)buffer;
-    crack_password_1_arg.len = buflen+1;
-    result_1 = crack_password_1(&crack_password_1_arg, cl);
+    networkMessage crack_password_1_arg;
+    crack_password_1_arg.payload = buffer;
+    //crack_password_1_arg.len = buflen+1;
+    result_1 = send_message_1(&crack_password_1_arg, cl);
     //check response
     if (result_1 == NULL) {
-        clnt_perror(clnt, "call failed:");
+        clnt_perror(cl, "call failed:");
     }
     else {
-        if(result_1[0] == 'x')
+        if(result_1->payload[0] == 'x')
             printf("Not Found\n");
-        else if (result_1[0] == 'f')
+        else if (result_1->payload[0] == 'f')
             printf("Found: %s\n",result_1 + 2);
         else
             printf("Unknown response: %s\n",result_1);

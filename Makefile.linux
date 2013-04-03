@@ -6,17 +6,29 @@ LIBS = #-lpthread -lssl -lcrypto
 
 all: $(TARGET)
 
-request: lsp_client.o network.o
-	$(CC) $(LFLAGS) -o $@ $@.cpp $^ $(LIBS)
+request: lsp_client.o network.o request.o cracker_clnt.o cracker_xdr.o
+	g++ $(LFLAGS) -o request request.o lsp_client.o network.o cracker_clnt.o cracker_xdr.o
 
-worker: lsp_client.o network.o
-	$(CC) $(LFLAGS) -o $@ $@.cpp $^ $(LIBS)
+worker: lsp_client.o network.o worker.o cracker_clnt.o cracker_xdr.o
+	g++ $(LFLAGS) -o worker worker.o lsp_client.o network.o cracker_clnt.o cracker_xdr.o -lcrypto
 
-server: lsp_server.o network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
-	g++ $(LFLAGS) -o server server.cpp lsp_server.o network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+server: lsp_server.o network.o server.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+	g++ $(LFLAGS) -o server server.o lsp_server.o network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
 
 network: network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
 	g++ $(LFLAGS) network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
+
+request.o: request.cpp
+	g++ $(CFLAGS) -c request.cpp
+
+worker.o: worker.cpp
+	g++ $(CFLAGS) -c worker.cpp
+
+server.o: server.cpp
+	g++ $(CFLAGS) -c server.cpp
+
+lsp_client.o: lsp_client.cpp cracker.h
+	g++ $(CFLAGS) -c lsp_client.cpp
 
 lsp_server.o: lsp_server.cpp cracker.h
 	g++ $(CFLAGS) -c lsp_server.cpp
@@ -30,8 +42,8 @@ cracker_client: cracker_client.o cracker_clnt.o cracker_xdr.o
 cracker_server: cracker_server.o cracker_svc.o cracker_xdr.o
 	g++ -o cracker_server cracker_server.o cracker_svc.o cracker_xdr.o
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $<
+#%.o: %.cpp
+#	$(CC) $(CFLAGS) $<
 
 cracker_svc.o: cracker.h
 	$(CC) $(CFLAGS) -c cracker_svc.c

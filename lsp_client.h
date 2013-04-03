@@ -3,7 +3,7 @@
 
 typedef struct {
     Connection              *connection;
-    std::queue<LSPMessage*> inbox;
+    std::queue<networkMessage*> inbox;
     pthread_mutex_t         mutex;
     pthread_t               readThread;
     pthread_t               writeThread;
@@ -12,8 +12,8 @@ typedef struct {
 
 // API Methods
 lsp_client* lsp_client_create(const char* dest, int port);
-int lsp_client_read(lsp_client* a_client, uint8_t* pld);
-bool lsp_client_write(lsp_client* a_client, uint8_t* pld, int lth);
+int lsp_client_read(lsp_client* a_client, char* pld);
+bool lsp_client_write(lsp_client* a_client, char* pld, int lth);
 bool lsp_client_close(lsp_client* a_client);
 
 // Internal methods

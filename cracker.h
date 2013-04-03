@@ -12,8 +12,8 @@
 
 
 struct networkMessage {
-	int connid;
-	int seqnum;
+	u_int connid;
+	u_int seqnum;
 	char *payload;
 };
 typedef struct networkMessage networkMessage;

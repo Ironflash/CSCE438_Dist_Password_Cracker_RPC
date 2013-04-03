@@ -1,4 +1,14 @@
-// John Keech, UIN:819000713, CSCE 438 - HW2
+/* 
+    File: network.cpp
+
+    Authors: Gregory LaFlash
+             Daniel Timothy S. Tan
+             Department of Computer Science
+             Texas A&M University
+    Date   : 04/05/2013
+
+    network functions for HW4 in CSCE 438-500
+*/
 
 #include "network.h"
 #include "cracker.h"
@@ -6,24 +16,6 @@
 double drop_rate = _DROP_RATE;
 
 #define PACKET_SIZE 2048
-
-networkMessage *
-send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
-{
-
-    static networkMessage  result;
-
-    result.connid = 0;
-    result.seqnum = 0;
-    result.payload = "this goes back";
-
-    printf("incoming string: \"%s\"\n", argp->payload);
-    printf("incoming connid: %d\n", argp->connid);
-    printf("incoming seqnum: %d\n", argp->seqnum);
-    printf("returning string: %d\n", result.payload);
-
-    return(&result);
-}
 
 Connection* network_setup_server(int port){
     Connection *conn = new Connection();
@@ -89,8 +81,9 @@ Connection* network_make_connection(const char *host, int port){
     //     }
     //     memcpy(&addr.sin_addr, hostp->h_addr, sizeof(addr.sin_addr));
     // }
-    /* Create the RPC client */
-    CLIENT* clnt = clnt_create(server, CRACKER_PROG, CRACKER_VERS, "udp");
+    // Create the RPC client
+    char type[] = "udp";
+    CLIENT* clnt = clnt_create(server, CRACKER_PROG, CRACKER_VERS, type);
     if (clnt == NULL) {
         clnt_pcreateerror(server);
         exit(1);

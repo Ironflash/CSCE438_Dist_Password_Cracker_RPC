@@ -1,6 +1,6 @@
 struct networkMessage{
-	int connid;
-    int seqnum;
+	unsigned int connid;
+    unsigned int seqnum;
     string payload<64>;
 };
 

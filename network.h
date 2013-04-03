@@ -1,4 +1,14 @@
-// John Keech, UIN:819000713, CSCE 438 - HW2
+/* 
+    File: network.h
+
+    Authors: Gregory LaFlash
+             Daniel Timothy S. Tan
+             Department of Computer Science
+             Texas A&M University
+    Date   : 04/05/2013
+
+    network functions for HW4 in CSCE 438-500
+*/
 
 #ifndef NETWORK_HANDLER
 #define NETWORK_HANDLER
@@ -13,7 +23,7 @@ networkMessage* send_message_1_svc(networkMessage *argp, struct svc_req *rqstp);
 Connection* network_setup_server(int port);
 Connection* network_make_connection(const char *host, int port);
 bool network_send_connection_request(Connection *conn);
-// bool network_wait_for_connection(Connection *conn, double timeout); // wait for a connection for timeout seconds
+bool network_wait_for_connection(Connection *conn, double timeout); // wait for a connection for timeout seconds
 
 // send and receive messages
 // bool network_send_message(Connection *conn, LSPMessage *msg);

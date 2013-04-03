@@ -3,6 +3,8 @@
 
 #define MAX_REQ_SIZE 500000
 
+int initialized = 0;
+
 typedef struct {
     uint32_t requester;
     char *hash;
@@ -10,7 +12,6 @@ typedef struct {
     char *upper;
 } request;
 
-/*
 request* divide_req(request *req, int req_size) {
    req_size--;
    
@@ -63,15 +64,49 @@ request* divide_req(request *req, int req_size) {
    return ret_req;
 };
 
+void initialize_server() {
+    printf("Initializing Server: \n");
+}
+
+networkMessage *
+send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
+{
+    //Initialization:
+    if (!initialized) {
+        initialize_server();
+        initialized = 1;
+    }
+
+    static networkMessage  result;
+
+    result.connid = 0;
+    result.seqnum = 0;
+    char temp[] = "this goes back";
+    result.payload = temp;
+
+    /*
+    printf("incoming string: \"%s\"\n", argp->payload);
+    printf("incoming connid: %d\n", argp->connid);
+    printf("incoming seqnum: %d\n", argp->seqnum);
+    printf("returning string: %d\n", result.payload);
+    //*/
+
+    return(&result);
+}
+
+
+/*
 int main(int argc, char* argv[]){
     // randomization seed requested by Dr. Stoleru
-    srand(12345);
+    // srand(12345);
     
     if(argc < 2) {
         printf("Usage: ./server port\n");
         return -1;
     }
 
+    return 0;
+}
     //lsp_set_drop_rate(0.2); // 20% of packets dropped
     //lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
@@ -98,6 +133,7 @@ int main(int argc, char* argv[]){
     
     while(true){
         // wait for data from clients
+        //*/
         /*
         bytes_read = lsp_server_read(server,payload,&returned_id); // NON RPC
         

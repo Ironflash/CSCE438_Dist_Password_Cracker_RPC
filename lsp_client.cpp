@@ -61,8 +61,7 @@ lsp_client* lsp_client_create(const char* dest, int port){
         return NULL;
     }
 
-    if(network_send_connection_request(client->connection) && 
-       network_wait_for_connection(client->connection, epoch_delay * num_epochs)){
+    if(network_send_connection_request(client->connection)){
         pthread_mutex_lock(&(client->mutex));
         
         // connection succeeded, build lsp_client struct        
@@ -92,7 +91,7 @@ lsp_client* lsp_client_create(const char* dest, int port){
     }
 }
 
-int lsp_client_read(lsp_client* a_client, uint8_t* pld){
+int lsp_client_read(lsp_client* a_client, char* pld){
     // block until a message arrives or the client becomes disconnected
     while(true){
         pthread_mutex_lock(&(a_client->mutex));
@@ -112,7 +111,7 @@ int lsp_client_read(lsp_client* a_client, uint8_t* pld){
            
         // we got a message, so return it
         if(msg){
-            std::string payload = msg->payload();
+            std::string payload = (std::string)msg->payload;
             delete msg;
             memcpy(pld,payload.c_str(),payload.length()+1);
             return payload.length();
@@ -126,7 +125,7 @@ int lsp_client_read(lsp_client* a_client, uint8_t* pld){
     return 0; // NULL, no bytes read (client disconnected)
 }
 
-bool lsp_client_write(lsp_client* a_client, uint8_t* pld, int lth){
+bool lsp_client_write(lsp_client* a_client, char* pld, int lth){
     // queues up a message to be written by the Write Thread
     
     if(pld == NULL || lth == 0)
@@ -188,7 +187,7 @@ void* ClientEpochThread(void *params){
             
             // resend the first message in the outbox, if any
             if(client->connection->outbox.size() > 0) {
-                if(DEBUG) printf("Client resending msg %d\n",client->connection->outbox.front()->seqnum());
+                if(DEBUG) printf("Client resending msg %d\n",client->connection->outbox.front()->seqnum);
                 network_send_message(client->connection,client->connection->outbox.front());
             }
         } else {
@@ -290,27 +289,27 @@ void* ClientWriteThread(void *params){
                 networkMessage* msg = network_send_message(client->connection,client->connection->outbox.front());
                 /* analyze the return from server */
                  if(msg) {
-                    if(msg->connid() == client->connection->id){
+                    if(msg->connid == client->connection->id){
                         pthread_mutex_lock(&(client->mutex));
                         
                         // reset counter for epochs since we have received a message
                         client->connection->epochsSinceLastMessage = 0;
                         
-                        if(msg->payload().length() == 0){
+                        if(strlen(msg->payload) == 0){
                             // we received an ACK
-                            if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum());
-                            if(msg->seqnum() == (client->connection->lastReceivedAck + 1)){
+                            if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum);
+                            if(msg->seqnum == (client->connection->lastReceivedAck + 1)){
                                 // this sequence number is next in line, even if it overflows
-                                client->connection->lastReceivedAck = msg->seqnum();
+                                client->connection->lastReceivedAck = msg->seqnum;
                             }
-                            if(client->connection->outbox.size() > 0 && msg->seqnum() == client->connection->outbox.front()->seqnum()) {
+                            if(client->connection->outbox.size() > 0 && msg->seqnum == client->connection->outbox.front()->seqnum) {
                                 delete client->connection->outbox.front();
                                 client->connection->outbox.pop();
                             }
                         } else {
                             // data packet
-                            if(DEBUG) printf("Client received msg %d\n",msg->seqnum());
-                            if(msg->seqnum() == (client->connection->lastReceivedSeq + 1)){
+                            if(DEBUG) printf("Client received msg %d\n",msg->seqnum);
+                            if(msg->seqnum == (client->connection->lastReceivedSeq + 1)){
                                 // next in the list
                                 client->connection->lastReceivedSeq++;
                                 client->inbox.push(msg);
@@ -324,7 +323,7 @@ void* ClientWriteThread(void *params){
                     }
                 }
                 /* done analyzing */
-                lastSent = client->connection->outbox.front()->seqnum();
+                lastSent = client->connection->outbox.front()->seqnum;
             }                
         }
         pthread_mutex_unlock(&(client->mutex));
@@ -358,7 +357,7 @@ void cleanup_connection(Connection *s){
     // if(s->fd != -1)
     //     close(s->fd);
     // delete s->addr;
-    delete s->clnt;
+    delete s->client;
     delete s;
 }
     
