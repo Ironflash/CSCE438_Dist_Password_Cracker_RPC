@@ -3,8 +3,6 @@
 #include <rpc/rpc.h>
 #include "cracker.h"
 
-
-
 int main(int argc, char* argv[]){
     // randomization seed requested by Dr. Stoleru
     srand(12345);

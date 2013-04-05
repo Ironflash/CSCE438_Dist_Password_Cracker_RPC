@@ -8,40 +8,32 @@
 
 
 void
-cracker_prog_1(char *host)
+cracker_prog_1( char* host )
 {
 	CLIENT *clnt;
 	networkMessage  *result_1;
 	networkMessage  send_message_1_arg;
-
-#ifndef	DEBUG
-	clnt = clnt_create (host, CRACKER_PROG, CRACKER_VERS, "udp");
+	clnt = clnt_create(host, CRACKER_PROG, CRACKER_VERS, "udp");
 	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
+		clnt_pcreateerror(host);
+		exit(1);
 	}
-#endif	/* DEBUG */
-
 	result_1 = send_message_1(&send_message_1_arg, clnt);
-	if (result_1 == (networkMessage *) NULL) {
-		clnt_perror (clnt, "call failed");
+	if (result_1 == NULL) {
+		clnt_perror(clnt, "call failed:");
 	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
+	clnt_destroy( clnt );
 }
 
 
-int
-main (int argc, char *argv[])
+main( int argc, char* argv[] )
 {
 	char *host;
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
+	if(argc < 2) {
+		printf("usage: %s server_host\n", argv[0]);
+		exit(1);
 	}
 	host = argv[1];
-	cracker_prog_1 (host);
-exit (0);
+	cracker_prog_1( host );
 }

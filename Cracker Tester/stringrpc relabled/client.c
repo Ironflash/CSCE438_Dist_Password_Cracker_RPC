@@ -82,13 +82,15 @@ void send_msg_to_server(char *host, char *input) {
 	out.name = input;
 	out.val = 1234;
 
-	clnt = clnt_create(host, TEST_PROG2, TEST_VERS2, "tcp");
+	clnt = clnt_create(host, TEST_PROG2, TEST_VERS2, "udp");
 	if (clnt == NULL) {
 		clnt_pcreateerror(host);
 		exit(1);
 	}
 
+	printf("calling test_func2_1... \n");
 	result = test_func2_1(&out, clnt);	/* call the remote function */
+	printf("finished calling test_func2_1... \n");
 	/* test if the RPC succeeded */
 	if (result == NULL) {
 		clnt_perror(clnt, "call failed:");
@@ -100,7 +102,7 @@ void send_msg_to_server(char *host, char *input) {
 void *request_app(char *host){
 	while(1) {
 		printf("Trying to message the server... \n");
-		//send_msg_to_server(host, "howdy server!");
+		send_msg_to_server(host, "howdy server!");
 		printf("Done \n");
 		sleep(2);
 	}

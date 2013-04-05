@@ -85,7 +85,7 @@ void send_msg_to_client(char *host, char *input) {
 	out.name = input;
 	out.val = 1234;
 
-	clnt = clnt_create(host, TEST_PROG1, TEST_VERS1, "tcp");
+	clnt = clnt_create(host, TEST_PROG1, TEST_VERS1, "udp");
 	if (clnt == NULL) {
 		clnt_pcreateerror(host);
 		exit(1);
