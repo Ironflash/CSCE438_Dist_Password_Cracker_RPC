@@ -111,14 +111,32 @@ int main(int argc, char* argv[]){
     
     printf("The connection to the server has been established\n");
     
+
     // send join message to the server
-    networkMessage* buffer;
+    // networkMessage* buffer;
+    // Create the join request
+    char buffer[64];
+    networkMessage inform_available_1_arg;
+    networkMessage inform_crack_1_arg;
+    networkMessage* result_1;
+    
+    // start looping for crack requests
+    while(true)
+    {
+    int buflen = sprintf(buffer, "j");
+
+    printf("sending [%d]: %s\n", buflen, buffer);
     // sprintf(buffer,"j");
     // lsp_client_write(client,(uint8_t*)buffer,2);
-    networkMessage* inform_available_1_arg;
-    networkMessage* result_1;
-    result_1 = send_message_1(inform_available_1_arg, cl);
+    
+    inform_available_1_arg.payload = buffer;
+    
+    result_1 = send_message_1(&inform_available_1_arg, cl);
 
+    printf("Print out result\n");
+    printf("result = %s\n", result_1->payload);
+
+    
     // wait for request chunks and then processes them
     // while(int bytes_read = lsp_client_read(client,(uint8_t*)buffer)){
         // we have received a crack request. let's parse it
@@ -155,9 +173,10 @@ int main(int argc, char* argv[]){
             // verify hash is valid
             if(strlen(hash) != 40) {
                 printf("Invalid hash: %s\n",hash);
-                bufLen = sprintf(buffer->payload,"x"); // send "not found" back to server
+                bufLen = sprintf(buffer,"x"); // send "not found" back to server
                 // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-                send_message_1(buffer, cl);
+                inform_crack_1_arg.payload = buffer;
+                send_message_1(&inform_crack_1_arg, cl);
                 //continue;
             }
 
@@ -169,17 +188,23 @@ int main(int argc, char* argv[]){
 
             // build response message
             if(pass)
-                bufLen = sprintf(buffer->payload,"f %s",pass);
+            {
+                bufLen = sprintf(buffer,"f %s",pass);
+                inform_crack_1_arg.payload = buffer;
+            }
             else 
-                bufLen = sprintf(buffer->payload, "x");
+            {
+                bufLen = sprintf(buffer, "x");
+                inform_crack_1_arg.payload = buffer;
+            }
 
             // send the response back to the server
             // lsp_client_write(client,(uint8_t*)buffer,bufLen+1);
-            send_message_1(buffer, cl);
+            send_message_1(&inform_crack_1_arg, cl);
         } else {
-            printf("Unknown message format: %s\n",buffer->payload); 
+            printf("Unknown message format: %s\n",result_1->payload); 
         }
-    //}
+    }
     // the connection to the server was lost
     // lsp_client_close(client);    
     clnt_destroy( cl );

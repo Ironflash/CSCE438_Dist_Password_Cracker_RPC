@@ -82,6 +82,7 @@ send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
     result.connid = 0;
     result.seqnum = 0;
     result.payload = "f test";
+    //char temp_response[] = "f test";
 
     
     printf("incoming string: \"%s\"\n", argp->payload);
