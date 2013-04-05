@@ -77,18 +77,18 @@ send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
         initialized = 1;
     }
 
-    static networkMessage  result;
+    static networkMessage result;
 
     result.connid = 0;
     result.seqnum = 0;
-    char temp[] = "this goes back";
-    result.payload = temp;
+    //char temp_response[] = "f test";
+    result.payload = "f test";
 
-    /*
+    
     printf("incoming string: \"%s\"\n", argp->payload);
     printf("incoming connid: %d\n", argp->connid);
     printf("incoming seqnum: %d\n", argp->seqnum);
-    printf("returning string: %d\n", result.payload);
+    printf("returning string: %s\n", result.payload);
     //*/
 
     return(&result);

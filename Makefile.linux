@@ -55,7 +55,7 @@ cracker_xdr.o: cracker.h
 	$(CC) $(CFLAGS) -c cracker_xdr.c
 
 cracker.h: cracker.x
-	rpcgen -C cracker.x
+	rpcgen -a -C cracker.x
 
 clean:
 	rm -f *.o 

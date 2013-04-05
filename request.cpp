@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
     //     return -1;
     // }
     
-    //printf("The connection to the server has been established\n");
+    printf("The connection to the server has been established\n");
     
     // calculate the lower and upper passwords for a certain length
     char buffer[1024];
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
     upper[len] = NULL;
     int buflen = sprintf(buffer, "c %s %s %s", hash, lower, upper);
     
-    //printf("sending [%d]: %s\n", buflen, buffer);
+    printf("sending [%d]: %s\n", buflen, buffer);
     
     networkMessage* result_1;
     // send password crack request to server
@@ -76,17 +76,28 @@ int main(int argc, char* argv[]){
     crack_password_1_arg.payload = buffer;
     //crack_password_1_arg.len = buflen+1;
     result_1 = send_message_1(&crack_password_1_arg, cl);
+
+    printf("Print out result\n");
+    printf("result = %s\n", result_1->payload);
+    //printf("result length %d\n", (int)strlen(result_1->payload));
+
+    //for (int i=0; i<; i++) {
+      //  printf("%c\n", result_1->payload[i]);
+    //}
+    
     //check response
     if (result_1 == NULL) {
-        clnt_perror(cl, "call failed:");
+        char failed[] = "call failed:";
+        clnt_perror(cl, failed);
     }
     else {
+
         if(result_1->payload[0] == 'x')
             printf("Not Found\n");
         else if (result_1->payload[0] == 'f')
-            printf("Found: %s\n",result_1 + 2);
+            printf("Found: %s\n",result_1->payload + 2);
         else
-            printf("Unknown response: %s\n",result_1);
+            printf("Unknown response: %s\n",result_1->payload);
     }
     // lsp_client_write(client,(uint8_t*)buffer,buflen+1);
     // int bytes_read = lsp_client_read(client,(uint8_t*)buffer);

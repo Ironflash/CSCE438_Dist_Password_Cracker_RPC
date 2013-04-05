@@ -4,18 +4,18 @@
  */
 
 #include <memory.h>
-#include "strings.h"
+#include "cracker.h"
 
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
 
-char **
-send_message_1(networkMessage *argp, CLIENT *clnt)
+stuff *
+test_func_1(stuff *argp, CLIENT *clnt)
 {
-	static char *clnt_res;
+	static stuff clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call(clnt, send_message, xdr_networkMessage, argp, xdr_wrapstring, &clnt_res, TIMEOUT) != RPC_SUCCESS)
+	if (clnt_call(clnt, TEST_FUNC, xdr_stuff, argp, xdr_stuff, &clnt_res, TIMEOUT) != RPC_SUCCESS)
 		return (NULL);
 	return (&clnt_res);
 }

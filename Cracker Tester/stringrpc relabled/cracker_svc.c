@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "strings.h"
+#include "cracker.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -72,13 +72,13 @@ closedown()
 	(void) alarm(_RPCSVC_CLOSEDOWN);
 }
 
-static void cracker_prog_1(struct svc_req *rqstp, SVCXPRT *transp);
+static void test_prog_1(struct svc_req *rqstp, SVCXPRT *transp);
 
 static void
-cracker_prog_1(struct svc_req *rqstp, SVCXPRT *transp)
+test_prog_1(struct svc_req *rqstp, SVCXPRT *transp)
 {
 	union {
-		networkMessage send_message_1_arg;
+		stuff test_func_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t xdr_argument, xdr_result;
@@ -91,10 +91,10 @@ cracker_prog_1(struct svc_req *rqstp, SVCXPRT *transp)
 		_rpcsvcdirty = 0;
 		return;
 
-	case send_message:
-		xdr_argument = (xdrproc_t) xdr_networkMessage;
-		xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) send_message_1_svc;
+	case TEST_FUNC:
+		xdr_argument = (xdrproc_t) xdr_stuff;
+		xdr_result = (xdrproc_t) xdr_stuff;
+		local = (char *(*)(char *, struct svc_req *)) test_func_1_svc;
 		break;
 
 	default:
@@ -143,7 +143,7 @@ main( int argc, char* argv[] )
 		sock = 0;
 		_rpcpmstart = 1;
 		proto = 0;
-		openlog("strings", LOG_PID, LOG_DAEMON);
+		openlog("cracker", LOG_PID, LOG_DAEMON);
 	} else {
 #ifndef RPC_SVC_FG
 		int size;
@@ -167,10 +167,10 @@ main( int argc, char* argv[] )
 			(void) ioctl(i, TIOCNOTTY, (char *)NULL);
 			(void) close(i);
 		}
-		openlog("strings", LOG_PID, LOG_DAEMON);
+		openlog("cracker", LOG_PID, LOG_DAEMON);
 #endif
 		sock = RPC_ANYSOCK;
-		(void) pmap_unset(CRACKER_PROG, CRACKER_VERS);
+		(void) pmap_unset(TEST_PROG, TEST_VERS);
 	}
 
 	if ((_rpcfdtype == 0) || (_rpcfdtype == SOCK_DGRAM)) {
@@ -181,8 +181,8 @@ main( int argc, char* argv[] )
 		}
 		if (!_rpcpmstart)
 			proto = IPPROTO_UDP;
-		if (!svc_register(transp, CRACKER_PROG, CRACKER_VERS, cracker_prog_1, proto)) {
-			_msgout("unable to register (CRACKER_PROG, CRACKER_VERS, udp).");
+		if (!svc_register(transp, TEST_PROG, TEST_VERS, test_prog_1, proto)) {
+			_msgout("unable to register (TEST_PROG, TEST_VERS, udp).");
 			exit(1);
 		}
 	}
@@ -198,8 +198,8 @@ main( int argc, char* argv[] )
 		}
 		if (!_rpcpmstart)
 			proto = IPPROTO_TCP;
-		if (!svc_register(transp, CRACKER_PROG, CRACKER_VERS, cracker_prog_1, proto)) {
-			_msgout("unable to register (CRACKER_PROG, CRACKER_VERS, tcp).");
+		if (!svc_register(transp, TEST_PROG, TEST_VERS, test_prog_1, proto)) {
+			_msgout("unable to register (TEST_PROG, TEST_VERS, tcp).");
 			exit(1);
 		}
 	}
