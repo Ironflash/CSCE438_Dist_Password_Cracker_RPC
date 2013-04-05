@@ -81,7 +81,6 @@ send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
 
     result.connid = 0;
     result.seqnum = 0;
-    //char temp_response[] = "f test";
     result.payload = "f test";
 
     

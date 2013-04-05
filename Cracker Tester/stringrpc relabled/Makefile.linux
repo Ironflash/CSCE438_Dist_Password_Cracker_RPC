@@ -2,11 +2,23 @@ CFLAGS = -g -DRPC_SVC_FG
 
 all: client server
 
-client: client.o cracker_clnt.o cracker_xdr.o
-	$(CC) -o client client.o cracker_clnt.o cracker_xdr.o
+client: client.o client_server.c cracker_clnt.o cracker_xdr.o
+	$(CC) -o client client.o client_server.c cracker_clnt.o cracker_xdr.o
 
-server: server.o cracker_svc.o  cracker_xdr.o
-	$(CC) -o server server.o cracker_svc.o cracker_xdr.o
+server: server.o server_server.c cracker_clnt.o cracker_xdr.o
+	$(CC) -o server server.o server_server.c cracker_clnt.o cracker_xdr.o
+
+server.o: server.c cracker.h
+	$(CC) $(CFLAGS) -c server.c -pthread
+
+client.o: client.c cracker.h
+	$(CC) $(CFLAGS) -c client.c -pthread
+
+#server_server.o: server_server.c cracker.h
+#	$(CC) $(CFLAGS) -c server_server.c
+
+#client_server.o: client_server.c cracker.h
+#	$(CC) $(CFLAGS) -c client_server.c
 
 cracker_svc.o: cracker.h
 	$(CC) $(CFLAGS) -c cracker_svc.c
@@ -17,14 +29,8 @@ cracker_clnt.o: cracker.h
 cracker_xdr.o: cracker_xdr.c 
 	$(CC) $(CFLAGS) -c cracker_xdr.c
 
-server.o: server.c cracker.h
-	$(CC) $(CFLAGS) -c server.c
-
-client.o: client.c cracker.h
-	$(CC) $(CFLAGS) -c client.c
-
 cracker.h: cracker.x
 	rpcgen -C cracker.x
 
 clean:
-	rm -f client client.o server server.o cracker_xdr.* cracker_clnt.* cracker_svc.* cracker.h
+	rm -f client client.o client_server client_server.o server server.o cracker_xdr.* cracker_clnt.* cracker_svc.* cracker.h
