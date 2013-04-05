@@ -73,12 +73,14 @@ int main(int argc, char* argv[]){
     networkMessage* result_1;
     // send password crack request to server
     networkMessage crack_password_1_arg;
-    crack_password_1_arg.payload = buffer;
+    crack_password_1_arg.connid = 0;
+    crack_password_1_arg.seqnum = 0;
+    crack_password_1_arg.payload = "";
     //crack_password_1_arg.len = buflen+1;
     result_1 = send_message_1(&crack_password_1_arg, cl);
 
     printf("Print out result\n");
-    printf("result = %s\n", result_1->payload);
+    printf("result connid = %i\n", result_1->connid);
     //printf("result length %d\n", (int)strlen(result_1->payload));
 
     //for (int i=0; i<; i++) {

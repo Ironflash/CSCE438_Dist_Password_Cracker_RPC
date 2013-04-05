@@ -16,14 +16,14 @@ typedef struct {
 } lsp_server;
 
 // API Methods
-lsp_server* lsp_server_create(int port);
-//int  lsp_server_read(lsp_server* a_srv, void* pld, uint32_t* conn_id);
-bool lsp_server_write(lsp_server* a_srv, void* pld, int lth, uint32_t conn_id);
+lsp_server* lsp_server_create();
+int  lsp_server_read(lsp_server* a_srv, void* pld, unsigned int* conn_id);
+bool lsp_server_write(lsp_server* a_srv, void* pld, int lth, unsigned int conn_id);
 bool lsp_server_close(lsp_server* a_srv, uint32_t conn_id);
 
 // Internal Methods
 void* ServerEpochThread(void *params);
-//void* ServerReadThread(void *params); //RPC handles reads by getting the return on a write
+void* ServerReadThread(void *params); //RPC handles reads by getting the return on a write
 
 void* ServerWriteThread(void *params);
 void cleanup_connection(Connection *s);

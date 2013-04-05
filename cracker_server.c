@@ -9,12 +9,11 @@
 networkMessage *
 send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
 {
-
 	static networkMessage  result;
 
 	/*
 	 * insert server code here
 	 */
 
-	return(&result);
+	return &result;
 }

@@ -3,8 +3,6 @@
 
 #define MAX_REQ_SIZE 500000
 
-int initialized = 0;
-
 typedef struct {
     uint32_t requester;
     char *hash;
@@ -68,51 +66,16 @@ void initialize_server() {
     printf("Initializing Server: \n");
 }
 
-networkMessage *
-send_message_1_svc(networkMessage *argp, struct svc_req *rqstp)
-{
-    //Initialization:
-    if (!initialized) {
-        initialize_server();
-        initialized = 1;
-    }
-
-    static networkMessage result;
-
-    result.connid = 0;
-    result.seqnum = 0;
-    result.payload = "f test";
-    //char temp_response[] = "f test";
-
-    
-    printf("incoming string: \"%s\"\n", argp->payload);
-    printf("incoming connid: %d\n", argp->connid);
-    printf("incoming seqnum: %d\n", argp->seqnum);
-    printf("returning string: %s\n", result.payload);
-    //*/
-
-    return(&result);
-}
-
-
-/*
-int main(int argc, char* argv[]){
+int run_server(){
     // randomization seed requested by Dr. Stoleru
-    // srand(12345);
-    
-    if(argc < 2) {
-        printf("Usage: ./server port\n");
-        return -1;
-    }
+    srand(12345);
 
-    return 0;
-}
     //lsp_set_drop_rate(0.2); // 20% of packets dropped
     //lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     // create a server
-    lsp_server *server = lsp_server_create(atoi(argv[1]));// NON RPC
+    lsp_server *server = lsp_server_create();// NON RPC
     if(!server)// NON RPC
         return -1;// NON RPC
 
@@ -126,7 +89,7 @@ int main(int argc, char* argv[]){
     std::queue<request*> next_req_queue;
 
     uint8_t payload[2048];
-    uint32_t returned_id;
+    unsigned int returned_id;
     int bytes_read;
     
     printf("Server started. Waiting for messages...\n");
@@ -134,7 +97,7 @@ int main(int argc, char* argv[]){
     while(true){
         // wait for data from clients
         //*/
-        /*
+        
         bytes_read = lsp_server_read(server,payload,&returned_id); // NON RPC
         
         // if bytes_read > 0 then there is data to be read
@@ -337,4 +300,3 @@ int main(int argc, char* argv[]){
     }        
     return 0;
 }
-//*/

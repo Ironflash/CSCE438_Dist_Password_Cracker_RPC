@@ -17,34 +17,6 @@ double drop_rate = _DROP_RATE;
 
 #define PACKET_SIZE 2048
 
-Connection* network_setup_server(int port){
-    Connection *conn = new Connection();
-    
-    // create the socket
-    // if((conn->fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1){
-    //     printf("Error creating the server socket\n");
-    //     delete conn;
-    //     return NULL;
-    // }
-    
-    // setup local address to bind on
-    // conn->addr = new sockaddr_in();
-    // memset(conn->addr,0,sizeof(sockaddr_in));
-    // conn->addr->sin_family = AF_INET;
-    // conn->addr->sin_port = htons(port);
-    // conn->addr->sin_addr.s_addr = htonl(INADDR_ANY);
-    
-    // bind the socket
-    // if(bind(conn->fd,(sockaddr*)conn->addr,sizeof(sockaddr_in)) == -1){
-    //     printf("Error binding socket to port %d\n",port);
-    //     delete conn->addr;
-    //     delete conn;
-    //     return NULL;
-    // }
-    
-    return conn;
-}
-
 Connection* network_make_connection(const char *host, int port){
     // creates a socket to the specified host and port
     

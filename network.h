@@ -18,7 +18,6 @@
 #define _DROP_RATE 0.0
 
 // build a socket and try to connect
-Connection* network_setup_server(int port);
 Connection* network_make_connection(const char *host, int port);
 bool network_send_connection_request(Connection *conn);
 //bool network_wait_for_connection(Connection *conn, double timeout); // wait for a connection for timeout seconds

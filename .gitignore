@@ -1,0 +1,17 @@
+Makefile.cracker
+cracker.h
+cracker_clnt.c
+cracker_clnt.o
+cracker_svc.c
+cracker_svc.o
+cracker_xdr.c
+cracker_xdr.o
+lsp_client.o
+lsp_server.o
+network.o
+request
+request.o
+server
+server.o
+worker
+worker.o
