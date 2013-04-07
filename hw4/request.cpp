@@ -1,7 +1,10 @@
 #include <iostream>
-#include "lsp_client.h"
-#include <rpc/rpc.h>
-#include "cracker.h"
+//#include "lsp_client.h"
+
+extern "C" {
+    #include "rpc_functions.h"
+}
+
 
 int main(int argc, char* argv[]){
     // randomization seed requested by Dr. Stoleru
@@ -37,14 +40,7 @@ int main(int argc, char* argv[]){
     //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     //Create the client
-    char *host = argv[1];
-    char type[] = "udp";
-    CLIENT *cl = clnt_create(host, CRACKER_PROG, CRACKER_VERS,type);
-    if (cl == NULL) 
-    {
-        clnt_pcreateerror(argv[1]);
-        exit(1);
-    }
+    initialize_client(argv[1]);
 
     // create a lsp client and connect to server
     // lsp_client *client = lsp_client_create(argv[1], port);
@@ -68,36 +64,11 @@ int main(int argc, char* argv[]){
     int buflen = sprintf(buffer, "c %s %s %s", hash, lower, upper);
     
     printf("sending [%d]: %s\n", buflen, buffer);
-
-    // *******************************
-    // setup RPC
-    int x, ans, s;
-    SVCXPRT *xprt;
-    s = RPC_ANYSOCK;
-
-    x = gettransient(IPPROTO_UDP, 1, &s);
-    fprintf(stderr, "client gets prognum %d\n", x);
-    if ((xprt = svcudp_create(s)) == NULL) {
-        fprintf(stderr, "rpc_server: svcudp_create\n");
-        exit(1);
-    }
-    // protocol is 0 - gettransient does registering
-    (void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, (void(*)())callback, 0);
- 
-    //printf(" making RPC call\n");
-    ans = callrpc(host, CRACKER_PROG, CRACKER_VERS,
-            (__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
-
-    printf(" RPC called\n");
-    if ((enum clnt_stat) ans != RPC_SUCCESS) {
-        fprintf(stderr, "call callrpc: ");
-        clnt_perrno((clnt_stat)ans);
-        fprintf(stderr, "\n");
-    }
-    // *******************************
     
-    networkMessage* result_1;
     // send password crack request to server
+    /*
+    printf("Requester is sending a message.... \n");
+    networkMessage* result_1;
     networkMessage crack_password_1_arg;
     crack_password_1_arg.connid = 0;
     crack_password_1_arg.seqnum = 0;
@@ -142,5 +113,7 @@ int main(int argc, char* argv[]){
     // }
     // lsp_client_close(client);    
     clnt_destroy( cl );
+    //*/
+
     return 0;
 }

@@ -1,4 +1,6 @@
 #include "lsp_client.h"
+
+#include <rpc/rpc.h>
 #include <rpc/pmap_clnt.h>
 
 void test_fn(networkMessage* argp) {
@@ -66,7 +68,7 @@ int callback(struct svc_req *rqstp, SVCXPRT * transp) {
             
             memset ((char *)&argument, 0, sizeof (argument));
 
-            if (!svc_getargs(transp, xdr_networkMessage, &argument)) {
+            if (!svc_getargs(transp, (bool_t (*)(XDR*, void*, ...))xdr_networkMessage, (char *)&argument)) {
                 svcerr_decode(transp);
                 return (1);
             }
