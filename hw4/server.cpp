@@ -1,4 +1,4 @@
-//#include "lsp_server.h"
+#include "lsp_server.h"
 #include <math.h>
 
 extern "C" {
@@ -7,7 +7,7 @@ extern "C" {
 
 #define MAX_REQ_SIZE 500000
 
-/*
+
 typedef struct {
     uint32_t requester;
     char *hash;
@@ -67,30 +67,26 @@ request* divide_req(request *req, int req_size) {
    return ret_req;
 };
 
-void initialize_server() {
-    printf("Initializing Server: \n");
-} //*/
+// void initialize_server() {
+//     printf("Initializing Server: \n");
+// } //
 
-int main (int argc, char **argv) {
-    
-    //**************************
-    // Initialize the server:    
-    initialize_server();
-}
 
-/*
+
+
 int run_server(){
     // randomization seed requested by Dr. Stoleru
     srand(12345);
 
-    //lsp_set_drop_rate(0.2); // 20% of packets dropped
-    //lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
-    //lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
+    lsp_set_drop_rate(0.2); // 20% of packets dropped
+    lsp_set_epoch_lth(0.1); // 100 ms per epoch = fast resends on failure
+    lsp_set_epoch_cnt(20); // 20 epochs (2 seconds) with no response
     
     // create a server
-    lsp_server *server = lsp_server_create();// NON RPC
-    if(!server)// NON RPC
-        return -1;// NON RPC
+    lsp_server *server = lsp_server_create();
+    if(!server)
+        return -1;
+    initialize_server();
 
     // keeps track of available worker who are not currently wrokinrg
     std::queue<uint32_t> inactive_workers; 
@@ -110,11 +106,11 @@ int run_server(){
     while(true){
         // wait for data from clients
         
-        bytes_read = lsp_server_read(server,payload,&returned_id); // NON RPC
+        bytes_read = lsp_server_read(server,payload,&returned_id); 
         
         // if bytes_read > 0 then there is data to be read
         // if bytes_read == 0 then a client disconnected
-        if(bytes_read) { // NON RPC
+        if(bytes_read) { 
             printf("[%d]: %s\n",returned_id, payload);
             if(payload[0] == 'j') { // worker joined the server
                 inactive_workers.push(returned_id); // add to inactive_workers
@@ -312,4 +308,11 @@ int run_server(){
     }        
     return 0;
 }
-//*/
+int main (int argc, char **argv) {
+    
+    //**************************
+    // Initialize the server:    
+   // initialize_server();
+    return run_server();
+}
+

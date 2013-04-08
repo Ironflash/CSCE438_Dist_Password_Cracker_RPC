@@ -1,85 +1,9 @@
 #include "lsp_client.h"
 
-#include <rpc/rpc.h>
-#include <rpc/pmap_clnt.h>
+// #include <rpc/rpc.h>
+// #include <rpc/pmap_clnt.h>
 
-void test_fn(networkMessage* argp) {
-    printf("incoming connid: \"%d\"\n", argp->connid);
-    printf("incoming seqnum: %d\n", argp->seqnum);
-    printf("incoming payload: %s\n", argp->payload);
-}
 
-int gettransient(int proto, int  vers, int* sockp) {
-    static int prognum = 0x40040000;
-    int s, len, socktype;
-    struct sockaddr_in addr;
-    switch(proto) {
-        case IPPROTO_UDP:
-            socktype = SOCK_DGRAM;
-            break;
-        case IPPROTO_TCP:
-            socktype = SOCK_STREAM;
-            break;
-        default:
-            fprintf(stderr, "unknown protocol type\n");
-            return 0;
-    }
-    if (*sockp == RPC_ANYSOCK) {
-        if ((s = socket(AF_INET, socktype, 0)) < 0) {
-            perror("socket");
-            return (0);
-        }
-        *sockp = s;
-    }
-    else
-        s = *sockp;
-    addr.sin_addr.s_addr = 0;
-    addr.sin_family = AF_INET;
-    addr.sin_port = 0;
-    len = sizeof(addr);
-    
-    // may be already bound, so don’t check for error
-
-    bind(s, (struct sockaddr *) &addr, len);
-    if (getsockname(s, (struct sockaddr *) &addr, (socklen_t*)&len)< 0) {
-        perror("getsockname");
-        return (0);
-    }
-    while (!pmap_set(prognum++, vers, proto,
-                ntohs(addr.sin_port))) continue;
-    return (prognum-1);
-}
-
-int callback(struct svc_req *rqstp, SVCXPRT * transp) {
-    union {
-        networkMessage test_func_1_arg;
-    } argument;
-
-    fprintf(stderr , "hello\n");
-
-    switch (rqstp->rq_proc) {
-        case 0:
-            if (!svc_sendreply(transp, (xdrproc_t) xdr_void, 0)) {
-                fprintf(stderr, "err: exampleprog\n");
-                return (1);
-            }
-            return (0);
-        case 1:
-            
-            memset ((char *)&argument, 0, sizeof (argument));
-
-            if (!svc_getargs(transp, (bool_t (*)(XDR*, void*, ...))xdr_networkMessage, (char *)&argument)) {
-                svcerr_decode(transp);
-                return (1);
-            }
-            test_fn((networkMessage *)&argument);
-                fprintf(stderr, "client got callback\n");
-            if (!svc_sendreply(transp, (xdrproc_t) xdr_void, 0)) {
-                fprintf(stderr, "err: exampleprog");
-                return (1);
-            }
-    }
-}
 
 double epoch_delay = _EPOCH_LTH; // number of seconds between epochs
 unsigned int num_epochs = _EPOCH_CNT; // number of epochs that are allowed to pass before a connection is terminated
@@ -125,6 +49,7 @@ lsp_client* lsp_client_create(const char* dest, int port){
     
     if(!client->connection){
         // connection could not be made
+        printf("connection not made\n");
         lsp_client_close(client);
         return NULL;
     }
@@ -133,7 +58,7 @@ lsp_client* lsp_client_create(const char* dest, int port){
     client->connection->lastReceivedSeq = 0;
     client->connection->lastReceivedAck = 0;
     client->connection->epochsSinceLastMessage = 0;
-    
+        
     // kickoff new epoch timer
     int res;
     if((res = pthread_create(&(client->epochThread), NULL, ClientEpochThread, (void*)client)) != 0){
@@ -367,7 +292,7 @@ void* ClientWriteThread(void *params){
             // we have received an ack for the last message, and we haven't sent the
             // next one out yet, so if it exists, let's send it now
             if(client->connection->outbox.size() > 0) {
-                networkMessage* msg = network_send_message(client->connection,client->connection->outbox.front());
+                networkMessage* msg = (networkMessage*) network_send_message(client->connection,client->connection->outbox.front());
                 /* analyze the return from server */
                  if(msg) {
                     if(msg->connid == client->connection->id){

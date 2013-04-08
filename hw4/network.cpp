@@ -104,6 +104,8 @@ Connection* network_make_connection(const char *host, int port){
     }
     // the socket was built successfully, so now copy that info to the connection object
     Connection *c = new Connection();
+    c->progNum =  initialize_client(server,clnt);
+    c->host = server;
     // c->fd = sd;
     // c->addr = new sockaddr_in();
     // memcpy(c->addr,&addr,addrlen);
@@ -115,10 +117,13 @@ Connection* network_make_connection(const char *host, int port){
 bool network_send_connection_request(Connection *conn){
     // LSPMessage *msg = network_build_message(0,0,NULL,0);
     networkMessage *msg = network_build_message(0,0,NULL,0);   
+    fprintf(stderr,"reached");
     networkMessage response;
     response.connid = 0; //temp
     response.seqnum = 0; //temp
-    response.payload = *network_send_message(conn,msg); 
+    char** result = network_send_message(conn,msg);
+    response.payload = *result; 
+    fprintf(stderr,"reached1");
     // if((response = network_send_message(conn,msg)) {
         //get connection id
         // if (response && response.seqnum == 0){
@@ -183,8 +188,18 @@ char** network_send_message(Connection *conn, networkMessage *msg){
     
     // free up the memory
     // delete buf;
+    if(msg == NULL)
+    {
+        fprintf(stderr,"message null");
+    }
+    fprintf(stderr,"reached6\n");
+    //test_func_1(msg,conn->client);
+    //char ** result = test_func_1(msg,conn->client);
+    char* result = "this is a test";
+    fprintf(stderr,"reached5");
+    // fprintf(stderr,"%s",*result);
+    return &result;
 
-    return test_func_1(msg,conn->client);
     // return true;
 }
 

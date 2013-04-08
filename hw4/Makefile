@@ -14,17 +14,17 @@ request: lsp_client.o network.o request.o cracker_clnt.o cracker_xdr.o
 worker: lsp_client.o network.o worker.o cracker_clnt.o cracker_xdr.o
 	$(CC2) $(CFLAGS) -o worker worker.o lsp_client.o network.o cracker_clnt.o cracker_xdr.o -lcrypto
 
-server: lsp_server.o network.o server.o cracker_xdr.o
-	$(CC2) $(CFLAGS) -o server server.o lsp_server.o network.o cracker_xdr.o
+server: rpc_functions.o lsp_server.o network.o server.o cracker_xdr.o 
+	$(CC2) $(CFLAGS) -o server server.o rpc_functions.o lsp_server.o network.o cracker_clnt.o cracker_xdr.o 
 
 network: network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
 	$(CC2) $(CFLAGS) network.o cracker_clnt.o cracker_svc.o cracker_xdr.o
 
-request2: rpc_functions.o request.o cracker_clnt.o cracker_xdr.o
-	$(CC2) $(CFLAGS) -o request request.o rpc_functions.o cracker_clnt.o cracker_xdr.o
+request2: rpc_functions.o network.o lsp_client.o request.o cracker_clnt.o cracker_xdr.o
+	$(CC2) $(CFLAGS) -o request request.o network.o lsp_client.o rpc_functions.o cracker_clnt.o cracker_xdr.o
 
-server2: network.o rpc_functions.o server.o cracker_clnt.o cracker_xdr.o
-	$(CC2) $(CFLAGS) -o server server.o rpc_functions.o cracker_clnt.o cracker_xdr.o
+server2: network.o rpc_functions.o network.o lsp_server.o server.o cracker_clnt.o cracker_xdr.o
+	$(CC2) $(CFLAGS) -o server  server.o network.o lsp_server.o rpc_functions.o cracker_clnt.o cracker_xdr.o
 
 rpc_functions.o: rpc_functions.c cracker.h
 	$(CC) $(CFLAGS) -c rpc_functions.c

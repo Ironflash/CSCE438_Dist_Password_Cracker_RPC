@@ -14,6 +14,9 @@
 #define NETWORK_HANDLER
 
 #include "datatypes.h"
+extern "C" {
+	#include "rpc_functions.h"
+}
 
 #define _DROP_RATE 0.0
 

@@ -26,6 +26,7 @@ static int pnum;
 static int count = 0;
 static int pnums[1];
 
+//adds the client program number to the array of program numbers
 void * callbackfn_1_svc(int *pnump,struct svc_req * req) {
 	printf("callbackfn exec start\n");
 	pnum = *(int *)pnump;
@@ -96,8 +97,10 @@ int setupitimer() { // set ITIMER_REAL for ___-second intervals
 }
 
 char ** test_func_1_svc(networkMessage * argp,struct svc_req * req) {
-	static char *result = "this goes back";
-	
+	//static char *result = "this goes back";
+	fprintf(stderr,"reached4");
+	char* result = "this goes back";
+	fprintf(stderr,"reached3");
 	printf("incoming connid: %d\n", argp->connid);
     printf("incoming seqnum: %d\n", argp->seqnum);
     printf("incoming payload: \"%s\"\n", argp->payload);
@@ -127,11 +130,11 @@ void initialize_server() {
 	fprintf(stderr, "set up period interrupts\n");	
 	if (setupinterrupt() == -1) {
 		perror("Failed to set up handler for SIGALRM");
-		return 1;
+		//return 1;
 	}
 	if (setupitimer() == -1) {
 		perror("Failed to set up the ITIMER_REAL interval timer");
-		return 1;
+		//return 1;
 	} //*/
 	//**************************
 
@@ -155,6 +158,41 @@ void test_fn(networkMessage* argp) {
     printf("incoming connid: \"%d\"\n", argp->connid);
     printf("incoming seqnum: %d\n", argp->seqnum);
     printf("incoming payload: %s\n", argp->payload);
+    //analyze the message
+	if(argp) {
+        if(argp->connid == client->connection->id){
+            pthread_mutex_lock(&(client->mutex));
+            
+            // reset counter for epochs since we have received a message
+            client->connection->epochsSinceLastMessage = 0;
+            
+            if(argp->payload.length() == 0){
+                // we received an ACK
+                if(DEBUG) printf("Client received an ACK for argp %d\n",argp->seqnum;
+                if(argp->seqnum == (client->connection->lastReceivedAck + 1)){
+                    // this sequence number is next in line, even if it overflows
+                    client->connection->lastReceivedAck = argp->seqnum();
+                }
+                if(client->connection->outbox.size() > 0 && argp->seqnum() == client->connection->outbox.front()->seqnum {
+                    delete client->connection->outbox.front();
+                    client->connection->outbox.pop();
+                }
+            } else {
+                // data packet
+                if(DEBUG) printf("Client received argp %d\n",argp->seqnum;
+                if(argp->seqnum == (client->connection->lastReceivedSeq + 1)){
+                    // next in the list
+                    client->connection->lastReceivedSeq++;
+                    client->inbox.push(argp);
+                    
+                    // send ack for this message
+                    network_acknowledge(client->connection);
+                }
+            }
+            
+            pthread_mutex_unlock(&(client->mutex));
+        }
+    }
 }
 
 int gettransient(int proto, int  vers, int* sockp) {
@@ -227,17 +265,67 @@ int callback(struct svc_req *rqstp, SVCXPRT * transp) {
 				return (1);
 			}
 	}
+
 }
 
 // ****************************************
 // RPC CLIENT MAIN FUNCTION:
 // ****************************************
 
-void initialize_client(char *host) {
-	CLIENT *clnt;
+// void initialize_client(char *host) {
+// 	CLIENT *clnt;
+// 	char**result; // return value
+
+// 	clnt = clnt_create(host, NFS_PROGRM, NFS_VERS, "udp");
+
+// 	int x, ans, s;
+// 	SVCXPRT *xprt;
+// 	s = RPC_ANYSOCK;
+
+// 	x = gettransient(IPPROTO_UDP, 1, &s);
+// 	fprintf(stderr, "client gets prognum %d\n", x);
+// 	if ((xprt = svcudp_create(s)) == NULL) {
+// 		fprintf(stderr, "rpc_server: svcudp_create\n");
+// 		exit(1);
+// 	}
+// 	// protocol is 0 - gettransient does registering
+// 	(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
+
+
+// 	//printf(" making RPC call\n");
+// 	ans = callrpc(host, NFS_PROGRM, NFS_VERS,
+// 			(__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
+
+// 	printf(" RPC called\n");
+// 	if ((enum clnt_stat) ans != RPC_SUCCESS) {
+// 		fprintf(stderr, "call callrpc: ");
+// 		clnt_perrno(ans);
+// 		fprintf(stderr, "\n");
+// 	}
+	
+// 	networkMessage out;
+// 	out.connid = 0;
+// 	out.seqnum = 0;
+// 	out.payload = "test";
+
+// 	result = test_func_1(&out, clnt);	// call the remote function
+// 	printf(" test_func_1 succeeded \n");
+
+// 	// test if the RPC succeeded
+// 	if (result == NULL) {
+// 		clnt_perror(clnt, "call test_func failed:");
+// 		exit(1);
+// 	}
+// 	//printf(" result %s %s \n",*result,(*((stuff*)result1)).name);
+// 	//sleep(10);
+// 	svc_run();
+// 	clnt_destroy( clnt );
+// }
+int initialize_client(char *host,CLIENT* clnt) {
+	// CLIENT *clnt;
 	char**result; // return value
 
-	clnt = clnt_create(host, NFS_PROGRM, NFS_VERS, "udp");
+	// clnt = clnt_create(host, NFS_PROGRM, NFS_VERS, "udp");
 
 	int x, ans, s;
 	SVCXPRT *xprt;
@@ -250,36 +338,37 @@ void initialize_client(char *host) {
 		exit(1);
 	}
 	// protocol is 0 - gettransient does registering
-	(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
-
+	//(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
 
 	//printf(" making RPC call\n");
-	ans = callrpc(host, NFS_PROGRM, NFS_VERS,
-			(__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
+	//tell the server that it needs to call the callback for this client
+	// ans = callrpc(host, NFS_PROGRM, NFS_VERS,
+	// 		(__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
 
-	printf(" RPC called\n");
-	if ((enum clnt_stat) ans != RPC_SUCCESS) {
-		fprintf(stderr, "call callrpc: ");
-		clnt_perrno(ans);
-		fprintf(stderr, "\n");
-	}
+	// printf(" RPC called\n");
+	// if ((enum clnt_stat) ans != RPC_SUCCESS) {
+	// 	fprintf(stderr, "call callrpc: ");
+	// 	clnt_perrno(ans);
+	// 	fprintf(stderr, "\n");
+	// }
 	
-	networkMessage out;
-	out.connid = 0;
-	out.seqnum = 0;
-	out.payload = "test";
+	// networkMessage out;
+	// out.connid = 0;
+	// out.seqnum = 0;
+	// out.payload = "test";
 
-	result = test_func_1(&out, clnt);	// call the remote function
-	printf(" test_func_1 succeeded \n");
+	// result = test_func_1(&out, clnt);	// call the remote function
+	// printf(" test_func_1 succeeded \n");
 
-	// test if the RPC succeeded
-	if (result == NULL) {
-		clnt_perror(clnt, "call test_func failed:");
-		exit(1);
-	}
+	// // test if the RPC succeeded
+	// if (result == NULL) {
+	// 	clnt_perror(clnt, "call test_func failed:");
+	// 	exit(1);
+	// }
+	
 	//printf(" result %s %s \n",*result,(*((stuff*)result1)).name);
 	//sleep(10);
-	svc_run();
-	clnt_destroy( clnt );
+	//svc_run();
+	return x;
 }
 

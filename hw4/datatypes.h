@@ -38,6 +38,7 @@ typedef struct {
     unsigned int            lastReceivedSeq;
     unsigned int            lastReceivedAck;
     unsigned int            epochsSinceLastMessage;
+    int                     progNum;
     std::queue<networkMessage*> outbox;
 } Connection;
 

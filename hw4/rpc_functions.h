@@ -27,7 +27,7 @@
 // Intitialize
 void initialize_server();
 
-void initialize_client(char *host);
+int initialize_client(char *host, CLIENT* clnt);
 
 // RPC Functions:
 int gettransient(int proto, int  vers, int* sockp);
