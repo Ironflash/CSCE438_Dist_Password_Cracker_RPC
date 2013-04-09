@@ -18,8 +18,13 @@ extern "C" {
 	#include "rpc_functions.h"
 }
 
+// #include <map>
+
+//maps progNum to client pointer for callbacks to access inbox/outbox
+// static std::map<int,Connection*> clientMapping;
 #define _DROP_RATE 0.0
 
+// Connection* m_server_connection;
 // build a socket and try to connect
 Connection* network_make_connection(const char *host, int port);
 bool network_send_connection_request(Connection *conn);
@@ -30,7 +35,9 @@ bool network_send_connection_request(Connection *conn);
 // bool network_send_message(Connection *conn, networkMessage *msg);
 // networkMessage* network_send_message(Connection *conn, networkMessage *msg);
 char** network_send_message(Connection *conn, networkMessage *msg);
+char** network_send_message_from_server(Connection *conn, networkMessage *msg);
 // LSPMessage* network_read_message(Connection *conn, double timeout, sockaddr_in *addr); // try to read a message with a timeout in seconds
+networkMessage* network_read_message(Connection *conn, double timeout, sockaddr_in *addr); // try to read a message with a timeout in seconds
 // bool network_acknowledge(Connection *conn); // send an acknowledgement from the client for the previously received message
 networkMessage* network_acknowledge(Connection *conn); // send an acknowledgement from the client for the previously received message
 
@@ -49,4 +56,7 @@ bool network_should_drop();
 // create a timeval structure
 struct timeval network_get_timeval(double seconds);
 
+void set_server(Connection* server);
+// void send_message_to_server(networkMessage* msg);
+void send_message_to_client(int progNum,networkMessage*);
 #endif

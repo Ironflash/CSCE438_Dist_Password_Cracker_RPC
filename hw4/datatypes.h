@@ -29,8 +29,8 @@ typedef enum {
 typedef struct {
     const char              *host;
     unsigned int            port;
-    // int                     fd;
-    // struct sockaddr_in      *addr;
+    int                     fd;
+    struct sockaddr_in      *addr;
     CLIENT*                 client;
     Status                  status;
     unsigned int            id;

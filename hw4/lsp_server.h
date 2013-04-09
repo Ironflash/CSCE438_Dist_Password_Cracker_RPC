@@ -15,6 +15,7 @@ typedef struct {
     pthread_t               epochThread; 
 } lsp_server;
 
+static lsp_server* m_server;
 // API Methods
 lsp_server* lsp_server_create();
 int  lsp_server_read(lsp_server* a_srv, void* pld, unsigned int* conn_id);
@@ -27,4 +28,7 @@ void* ServerReadThread(void *params); //RPC handles reads by getting the return 
 
 void* ServerWriteThread(void *params);
 void cleanup_connection(Connection *s);
+
+void set_server(lsp_server* server);
+void send_message_to_server(networkMessage* msg);
 

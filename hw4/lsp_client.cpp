@@ -70,6 +70,8 @@ lsp_client* lsp_client_create(const char* dest, int port){
     if(network_send_connection_request(client->connection)){
         pthread_mutex_lock(&(client->mutex));
         
+        //map the program number to the CLIENT pointer
+        clientMapping[client->connection->progNum] = client;
         // connection succeeded, build lsp_client struct        
         client->connection->port = port;
         client->connection->host = dest;
@@ -229,29 +231,30 @@ void* ClientEpochThread(void *params){
         
 //         // attempt to read
 //         sockaddr_in addr;
-//         LSPMessage *msg = network_read_message(client->connection, 0.5,&addr);
+//         // LSPMessage *msg = network_read_message(client->connection, 0.5,&addr);
+//         networkMessage *msg = network_read_message(client->connection, 0.5,&addr);
 //         if(msg) {
-//             if(msg->connid() == client->connection->id){
+//             if(msg->connid == client->connection->id){
 //                 pthread_mutex_lock(&(client->mutex));
                 
 //                 // reset counter for epochs since we have received a message
 //                 client->connection->epochsSinceLastMessage = 0;
                 
-//                 if(msg->payload().length() == 0){
+//                 if(msg->payload == ""){
 //                     // we received an ACK
-//                     if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum());
-//                     if(msg->seqnum() == (client->connection->lastReceivedAck + 1)){
+//                     if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum);
+//                     if(msg->seqnum == (client->connection->lastReceivedAck + 1)){
 //                         // this sequence number is next in line, even if it overflows
-//                         client->connection->lastReceivedAck = msg->seqnum();
+//                         client->connection->lastReceivedAck = msg->seqnum;
 //                     }
-//                     if(client->connection->outbox.size() > 0 && msg->seqnum() == client->connection->outbox.front()->seqnum()) {
+//                     if(client->connection->outbox.size() > 0 && msg->seqnum == client->connection->outbox.front()->seqnum) {
 //                         delete client->connection->outbox.front();
 //                         client->connection->outbox.pop();
 //                     }
 //                 } else {
 //                     // data packet
-//                     if(DEBUG) printf("Client received msg %d\n",msg->seqnum());
-//                     if(msg->seqnum() == (client->connection->lastReceivedSeq + 1)){
+//                     if(DEBUG) printf("Client received msg %d\n",msg->seqnum);
+//                     if(msg->seqnum == (client->connection->lastReceivedSeq + 1)){
 //                         // next in the list
 //                         client->connection->lastReceivedSeq++;
 //                         client->inbox.push(msg);
@@ -366,4 +369,43 @@ void cleanup_connection(Connection *s){
     delete s->client;
     delete s;
 }
-    
+
+void send_message_to_client(int progNum,networkMessage* msg)
+{   
+    lsp_client* client = clientMapping[progNum];
+    if(msg) {
+        if(msg->connid == client->connection->id){
+            pthread_mutex_lock(&(client->mutex));
+            
+            // reset counter for epochs since we have received a message
+            client->connection->epochsSinceLastMessage = 0;
+            
+            if(msg->payload == ""){
+                // we received an ACK
+                if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum);
+                if(msg->seqnum == (client->connection->lastReceivedAck + 1)){
+                    // this sequence number is next in line, even if it overflows
+                    client->connection->lastReceivedAck = msg->seqnum;
+                }
+                if(client->connection->outbox.size() > 0 && msg->seqnum == client->connection->outbox.front()->seqnum) {
+                    delete client->connection->outbox.front();
+                    client->connection->outbox.pop();
+                }
+            } else {
+                // data packet
+                if(DEBUG) printf("Client received msg %d\n",msg->seqnum);
+                if(msg->seqnum == (client->connection->lastReceivedSeq + 1)){
+                    // next in the list
+                    client->connection->lastReceivedSeq++;
+                    client->inbox.push(msg);
+                    
+                    // send ack for this message
+                    network_acknowledge(client->connection);
+                }
+            }   
+            pthread_mutex_unlock(&(client->mutex));
+        }
+    }
+}
+
+

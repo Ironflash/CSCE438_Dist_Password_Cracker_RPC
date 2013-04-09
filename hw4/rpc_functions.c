@@ -96,7 +96,7 @@ int setupitimer() { // set ITIMER_REAL for ___-second intervals
     return (setitimer(ITIMER_REAL, &value, NULL));
 }
 
-char ** test_func_1_svc(networkMessage * argp,struct svc_req * req) {
+void* test_func_1_svc(networkMessage * argp,struct svc_req * req) {
 	//static char *result = "this goes back";
 	fprintf(stderr,"reached4");
 	char* result = "this goes back";
@@ -105,7 +105,7 @@ char ** test_func_1_svc(networkMessage * argp,struct svc_req * req) {
     printf("incoming seqnum: %d\n", argp->seqnum);
     printf("incoming payload: \"%s\"\n", argp->payload);
 
-	return(&result);
+	//return(&result);
 }
 
 // ****************************************
@@ -158,41 +158,42 @@ void test_fn(networkMessage* argp) {
     printf("incoming connid: \"%d\"\n", argp->connid);
     printf("incoming seqnum: %d\n", argp->seqnum);
     printf("incoming payload: %s\n", argp->payload);
+    printf("server executing this on the client\n");
     //analyze the message
-	if(argp) {
-        if(argp->connid == client->connection->id){
-            pthread_mutex_lock(&(client->mutex));
+	// if(argp) {
+ //        if(argp->connid == client->connection->id){
+ //            pthread_mutex_lock(&(client->mutex));
             
-            // reset counter for epochs since we have received a message
-            client->connection->epochsSinceLastMessage = 0;
+ //            // reset counter for epochs since we have received a message
+ //            client->connection->epochsSinceLastMessage = 0;
             
-            if(argp->payload.length() == 0){
-                // we received an ACK
-                if(DEBUG) printf("Client received an ACK for argp %d\n",argp->seqnum;
-                if(argp->seqnum == (client->connection->lastReceivedAck + 1)){
-                    // this sequence number is next in line, even if it overflows
-                    client->connection->lastReceivedAck = argp->seqnum();
-                }
-                if(client->connection->outbox.size() > 0 && argp->seqnum() == client->connection->outbox.front()->seqnum {
-                    delete client->connection->outbox.front();
-                    client->connection->outbox.pop();
-                }
-            } else {
-                // data packet
-                if(DEBUG) printf("Client received argp %d\n",argp->seqnum;
-                if(argp->seqnum == (client->connection->lastReceivedSeq + 1)){
-                    // next in the list
-                    client->connection->lastReceivedSeq++;
-                    client->inbox.push(argp);
+ //            if(argp->payload.length() == 0){
+ //                // we received an ACK
+ //                if(DEBUG) printf("Client received an ACK for argp %d\n",argp->seqnum;
+ //                if(argp->seqnum == (client->connection->lastReceivedAck + 1)){
+ //                    // this sequence number is next in line, even if it overflows
+ //                    client->connection->lastReceivedAck = argp->seqnum();
+ //                }
+ //                if(client->connection->outbox.size() > 0 && argp->seqnum() == client->connection->outbox.front()->seqnum {
+ //                    delete client->connection->outbox.front();
+ //                    client->connection->outbox.pop();
+ //                }
+ //            } else {
+ //                // data packet
+ //                if(DEBUG) printf("Client received argp %d\n",argp->seqnum;
+ //                if(argp->seqnum == (client->connection->lastReceivedSeq + 1)){
+ //                    // next in the list
+ //                    client->connection->lastReceivedSeq++;
+ //                    client->inbox.push(argp);
                     
-                    // send ack for this message
-                    network_acknowledge(client->connection);
-                }
-            }
+ //                    // send ack for this message
+ //                    network_acknowledge(client->connection);
+ //                }
+ //            }
             
-            pthread_mutex_unlock(&(client->mutex));
-        }
-    }
+ //            pthread_mutex_unlock(&(client->mutex));
+ //        }
+ //    }
 }
 
 int gettransient(int proto, int  vers, int* sockp) {
@@ -338,10 +339,10 @@ int initialize_client(char *host,CLIENT* clnt) {
 		exit(1);
 	}
 	// protocol is 0 - gettransient does registering
-	//(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
+	(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
 
-	//printf(" making RPC call\n");
-	//tell the server that it needs to call the callback for this client
+	// printf(" making RPC call\n");
+	// //tell the server that it needs to call the callback for this client
 	// ans = callrpc(host, NFS_PROGRM, NFS_VERS,
 	// 		(__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
 
@@ -357,18 +358,31 @@ int initialize_client(char *host,CLIENT* clnt) {
 	// out.seqnum = 0;
 	// out.payload = "test";
 
-	// result = test_func_1(&out, clnt);	// call the remote function
+	// //result = 
+	// test_func_1(&out, clnt);	// call the remote function
 	// printf(" test_func_1 succeeded \n");
 
-	// // test if the RPC succeeded
+	// test if the RPC succeeded
 	// if (result == NULL) {
 	// 	clnt_perror(clnt, "call test_func failed:");
 	// 	exit(1);
 	// }
 	
-	//printf(" result %s %s \n",*result,(*((stuff*)result1)).name);
-	//sleep(10);
-	//svc_run();
+	// printf(" result %s %s \n",*result,(*((stuff*)result1)).name);
+	// sleep(10);
+	// svc_run();
 	return x;
 }
 
+void send_message_to_server(const char *host,CLIENT* clnt,int progNum) {
+	// int ans = callrpc(host, NFS_PROGRM, NFS_VERS,
+	// 			(__const u_long) 2, (__const xdrproc_t) xdr_int, &progNum, (__const xdrproc_t) xdr_void, 0);
+
+	// printf(" RPC called\n");
+	// if ((enum clnt_stat) ans != RPC_SUCCESS) {
+	// 	fprintf(stderr, "call callrpc: ");
+	// 	clnt_perrno(ans);
+	// 	fprintf(stderr, "\n");
+	// }
+	// svc_run();
+}

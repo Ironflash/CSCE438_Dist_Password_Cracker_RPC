@@ -105,7 +105,9 @@ Connection* network_make_connection(const char *host, int port){
     // the socket was built successfully, so now copy that info to the connection object
     Connection *c = new Connection();
     c->progNum =  initialize_client(server,clnt);
+    //strcpy(c->host,server);
     c->host = server;
+    fprintf(stderr,"%s",c->host);
     // c->fd = sd;
     // c->addr = new sockaddr_in();
     // memcpy(c->addr,&addr,addrlen);
@@ -193,10 +195,43 @@ char** network_send_message(Connection *conn, networkMessage *msg){
         fprintf(stderr,"message null");
     }
     fprintf(stderr,"reached6\n");
-    //test_func_1(msg,conn->client);
+    // test_func_1(msg,conn->client);
     //char ** result = test_func_1(msg,conn->client);
     char* result = "this is a test";
     fprintf(stderr,"reached5");
+    send_message_to_server("127.0.0.1",conn->client,conn->progNum);
+    // fprintf(stderr,"%s",*result);
+    return &result;
+
+    // return true;
+}
+
+char** network_send_message_from_server(Connection *conn, networkMessage *msg){
+    // sends an LSP Message
+    // if(DEBUG) printf("Sending message (%d,%d,\"%s\")\n",msg->connid(),msg->seqnum(),msg->payload().c_str());
+    if(DEBUG) printf("Sending message (%d,%d,\"%s\")\n",msg->connid,msg->seqnum,msg->payload);
+
+    // marshal the message into a buffer for sending
+    // int len;
+    // uint8_t* buf = network_marshal(msg,&len);
+    
+    // if(sendto(conn->fd, buf, len, 0, (sockaddr*)(conn->addr), sizeof(sockaddr_in)) == -1){
+    //     printf("Error sending message: %s\n",strerror(errno));
+    //     return false;
+    // }
+    
+    // free up the memory
+    // delete buf;
+    if(msg == NULL)
+    {
+        fprintf(stderr,"message null");
+    }
+    fprintf(stderr,"reached6\n");
+    // test_func_1(msg,conn->client);
+    //char ** result = test_func_1(msg,conn->client);
+    char* result = "this is a test";
+    fprintf(stderr,"reached5");
+    //send_message_to_server("127.0.0.1",conn->client,conn->progNum);
     // fprintf(stderr,"%s",*result);
     return &result;
 
@@ -204,40 +239,42 @@ char** network_send_message(Connection *conn, networkMessage *msg){
 }
 
 // LSPMessage* network_read_message(Connection *conn, double timeout, sockaddr_in *addr){
-// networkMessage* network_read_message(Connection *conn, double timeout, sockaddr_in *addr){
-//     // attmpts to read a message from a Connection. Returns the message if one was read,
-//     // or it returns NULL if the timeout was reached before a message was received.
+networkMessage* network_read_message(Connection *conn, double timeout, sockaddr_in *addr){
+    // attmpts to read a message from a Connection. Returns the message if one was read,
+    // or it returns NULL if the timeout was reached before a message was received.
     
-//     // fd_set read;
-//     // FD_ZERO(&read);
-//     // FD_SET(conn->fd, &read);
+    fd_set read;
+    FD_ZERO(&read);
+    FD_SET(conn->fd, &read);
     
-//     timeval t = network_get_timeval(timeout);
-//     while(true){
-//         int result = select(conn->fd + 1, &read, NULL, NULL, &t);
-//         if(result == -1){
-//             printf("Error receiving message: %s\n",strerror(errno));
-//             return NULL;
-//         } else if (result == 0) {
-//             if(DEBUG) printf("Receive timed out after %.2f seconds\n",timeout);
-//             return NULL;
-//         } else {
-//             // a packet was received, let's parse it
-//             uint8_t buf[PACKET_SIZE];
-//             socklen_t addr_len = sizeof(sockaddr_in);
-//             result = recvfrom(conn->fd, buf, PACKET_SIZE, 0, (sockaddr*)addr, &addr_len);
-//             if (result == -1 || addr_len != sizeof(sockaddr_in)){
-//                 printf("Error reading response: %s\n",strerror(errno));
-//                 return NULL;
-//             }
+    timeval t = network_get_timeval(timeout);
+    while(true){
+        int result = select(conn->fd + 1, &read, NULL, NULL, &t);
+        if(result == -1){
+            printf("Error receiving message: %s\n",strerror(errno));
+            return NULL;
+        } else if (result == 0) {
+            if(DEBUG) printf("Receive timed out after %.2f seconds\n",timeout);
+            return NULL;
+        } else {
+            // a packet was received, let's parse it
+            // uint8_t buf[PACKET_SIZE];
+            networkMessage* buf;
+            socklen_t addr_len = sizeof(sockaddr_in);
+            result = recvfrom(conn->fd, buf, PACKET_SIZE, 0, (sockaddr*)addr, &addr_len);
+            if (result == -1 || addr_len != sizeof(sockaddr_in)){
+                printf("Error reading response: %s\n",strerror(errno));
+                return NULL;
+            }
         
-//             if(network_should_drop())
-//                 continue; // drop the packet and continue reading
+            if(network_should_drop())
+                continue; // drop the packet and continue reading
         
-//             return network_unmarshal(buf,result);
-//         }
-//     }
-// }
+            // return network_unmarshal(buf,result);
+            return buf;
+        }
+    }
+}
 
 // LSPMessage* network_build_message(int id, int seq, uint8_t *pld, int len){
 networkMessage* network_build_message(int id, int seq, char *pld, int len){
@@ -297,3 +334,117 @@ struct timeval network_get_timeval(double seconds){
     return t;
 }
 
+// void set_server(Connection* server)
+// {
+//     m_server = server;
+// }
+
+// void send_message_to_server(networkMessage* msg)
+// {   
+//     if(msg) {
+//         // we got a message, let's parse it
+//         pthread_mutex_lock(&(m_server->mutex));
+//         if(msg->connid == 0 && msg->seqnum == 0 && strlen(msg->payload) == 0){
+//             // connection request, if first time, make the connection
+//             //sprintf(host,"%s:%d",inet_ntoa(addr.sin_addr),addr.sin_port);
+//             //if(m_server->connections.count(host) == 0){
+//                 // this is the first time we've seen this host, add it to the m_server's list of seen hosts
+//                 //m_server->connections.insert(host);
+                
+//                 if(DEBUG) printf("Connection request received from client\n");
+                
+//                 // build up the new connection object
+//                 Connection *conn = new Connection();
+//                 conn->status = CONNECTED;
+//                 conn->id = m_server->nextConnID;
+//                 m_server->nextConnID++;
+//                 conn->lastSentSeq = 0;
+//                 conn->lastReceivedSeq = 0;
+//                 conn->epochsSinceLastMessage = 0;
+                
+//          // send an ack for the connection request
+//         if(DEBUG) printf("Sending back connection ack with id %i\n", conn->id);
+
+//         msg->connid = conn->id;
+//                 // return msg;
+                
+//                 // insert this connection into the list of connections
+//                 m_server->clients.insert(std::pair<int,Connection*>(conn->id,conn));
+//             //}
+//         } else {
+//             if(m_server->clients.count(msg->connid) == 0){
+//                 printf("Bogus connection id received: %d, skipping message...\n",msg->connid);
+//             } else {
+//                 Connection *conn = m_server->clients[msg->connid];
+            
+//                 // reset counter for epochs since we have received a message
+//                 conn->epochsSinceLastMessage = 0;
+            
+//                 if(strlen(msg->payload)== 0){
+//                     // we received an ACK
+//                     if(DEBUG) printf("m_server received an ACK for conn %d msg %d\n",msg->connid,msg->seqnum);
+//                     if(msg->seqnum == (conn->lastReceivedAck + 1))
+//                         conn->lastReceivedAck = msg->seqnum;
+//                     if(conn->outbox.size() > 0 && msg->seqnum == conn->outbox.front()->seqnum) {
+//                         delete conn->outbox.front();
+//                         conn->outbox.pop();
+//                     }
+//                 } else {
+//                     // data packet
+//                     if(DEBUG) printf("m_server received msg %d for conn %d\n",msg->seqnum,msg->connid);
+//                     if(msg->seqnum == (conn->lastReceivedSeq + 1)){
+//                         // next in the list
+//                         conn->lastReceivedSeq++;
+//                         m_server->inbox.push(msg);
+                    
+//                         // send ack for this message
+//                         msg->connid = conn->id;
+//             msg->seqnum = conn->lastReceivedSeq;
+//             msg->payload = "";
+//             // return msg;
+//                     }
+//                 }
+//             }
+//         }
+//         pthread_mutex_unlock(&(m_server->mutex));
+//     }
+//     pthread_mutex_unlock(&(m_server->mutex));
+// }
+
+// void send_message_to_client(int progNum,networkMessage* msg)
+// {   
+//     //lsp_client* client = clientMapping[progNum];
+//     if(msg) {
+//         if(msg->connid == client->connection->id){
+//             pthread_mutex_lock(&(client->mutex));
+            
+//             // reset counter for epochs since we have received a message
+//             client->connection->epochsSinceLastMessage = 0;
+            
+//             if(msg->payload == ""){
+//                 // we received an ACK
+//                 if(DEBUG) printf("Client received an ACK for msg %d\n",msg->seqnum);
+//                 if(msg->seqnum == (client->connection->lastReceivedAck + 1)){
+//                     // this sequence number is next in line, even if it overflows
+//                     client->connection->lastReceivedAck = msg->seqnum;
+//                 }
+//                 if(client->connection->outbox.size() > 0 && msg->seqnum == client->connection->outbox.front()->seqnum) {
+//                     delete client->connection->outbox.front();
+//                     client->connection->outbox.pop();
+//                 }
+//             } else {
+//                 // data packet
+//                 if(DEBUG) printf("Client received msg %d\n",msg->seqnum);
+//                 if(msg->seqnum == (client->connection->lastReceivedSeq + 1)){
+//                     // next in the list
+//                     client->connection->lastReceivedSeq++;
+//                     client->inbox.push(msg);
+                    
+//                     // send ack for this message
+//                     network_acknowledge(client->connection);
+//                 }
+//             }   
+//             pthread_mutex_unlock(&(client->mutex));
+//         }
+//     }
+// }

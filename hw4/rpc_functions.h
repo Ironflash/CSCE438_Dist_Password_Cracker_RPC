@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+// #include "lsp_server.h"
+// #include "lsp_client.h"
 // Intitialize
 void initialize_server();
 
@@ -46,3 +48,5 @@ void timer_handler(int s);
 int setupinterrupt();
 
 int setupitimer();
+
+void send_message_to_server(const char *host,CLIENT* clnt,int progNum);

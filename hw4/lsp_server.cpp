@@ -68,7 +68,8 @@ lsp_server* lsp_server_create(){
 	lsp_server_close(server,0);
         return NULL;
     }
-
+    //save the server for later
+    m_server = server;
     return server;
 }
 
@@ -197,7 +198,7 @@ void* ServerEpochThread(void *params){
             // resend the first message in the outbox, if any
             if(conn->outbox.size() > 0) {
                 if(DEBUG) printf("Server resending msg %d for conn %d\n",conn->outbox.front()->seqnum,conn->id);
-                network_send_message(conn,conn->outbox.front());
+                network_send_message_from_server(conn,conn->outbox.front());
             }
             
             if(++(conn->epochsSinceLastMessage) >= num_epochs){
@@ -362,7 +363,7 @@ void* ServerWriteThread(void *params){
                 // we have received an ack for the last message, and we haven't sent the
                 // next one out yet, so if it exists, let's send it now
                 if(conn->outbox.size() > 0) {
-                    network_send_message(conn,conn->outbox.front());
+                    network_send_message_from_server(conn,conn->outbox.front());
                     lastSent[conn->id] = conn->outbox.front()->seqnum;
                 }
             }
@@ -386,4 +387,82 @@ void cleanup_connection(Connection *s){
     //*/
     delete s;
 }
+
+void set_server(lsp_server* server)
+{
+    m_server = server;
+}
+
+void send_message_to_server(networkMessage* msg)
+{   
+    if(msg) {
+        // we got a message, let's parse it
+        pthread_mutex_lock(&(m_server->mutex));
+        if(msg->connid == 0 && msg->seqnum == 0 && strlen(msg->payload) == 0){
+            // connection request, if first time, make the connection
+            //sprintf(host,"%s:%d",inet_ntoa(addr.sin_addr),addr.sin_port);
+            //if(m_server->connections.count(host) == 0){
+                // this is the first time we've seen this host, add it to the m_server's list of seen hosts
+                //m_server->connections.insert(host);
+                
+                if(DEBUG) printf("Connection request received from client\n");
+                
+                // build up the new connection object
+                Connection *conn = new Connection();
+                conn->status = CONNECTED;
+                conn->id = m_server->nextConnID;
+                m_server->nextConnID++;
+                conn->lastSentSeq = 0;
+                conn->lastReceivedSeq = 0;
+                conn->epochsSinceLastMessage = 0;
+                
+         // send an ack for the connection request
+        if(DEBUG) printf("Sending back connection ack with id %i\n", conn->id);
+
+        msg->connid = conn->id;
+                // return msg;
+                
+                // insert this connection into the list of connections
+                m_server->clients.insert(std::pair<int,Connection*>(conn->id,conn));
+            //}
+        } else {
+            if(m_server->clients.count(msg->connid) == 0){
+                printf("Bogus connection id received: %d, skipping message...\n",msg->connid);
+            } else {
+                Connection *conn = m_server->clients[msg->connid];
+            
+                // reset counter for epochs since we have received a message
+                conn->epochsSinceLastMessage = 0;
+            
+                if(strlen(msg->payload)== 0){
+                    // we received an ACK
+                    if(DEBUG) printf("m_server received an ACK for conn %d msg %d\n",msg->connid,msg->seqnum);
+                    if(msg->seqnum == (conn->lastReceivedAck + 1))
+                        conn->lastReceivedAck = msg->seqnum;
+                    if(conn->outbox.size() > 0 && msg->seqnum == conn->outbox.front()->seqnum) {
+                        delete conn->outbox.front();
+                        conn->outbox.pop();
+                    }
+                } else {
+                    // data packet
+                    if(DEBUG) printf("m_server received msg %d for conn %d\n",msg->seqnum,msg->connid);
+                    if(msg->seqnum == (conn->lastReceivedSeq + 1)){
+                        // next in the list
+                        conn->lastReceivedSeq++;
+                        m_server->inbox.push(msg);
+                    
+                        // send ack for this message
+                        msg->connid = conn->id;
+            msg->seqnum = conn->lastReceivedSeq;
+            msg->payload = "";
+            // return msg;
+                    }
+                }
+            }
+        }
+        pthread_mutex_unlock(&(m_server->mutex));
+    }
+    pthread_mutex_unlock(&(m_server->mutex));
+}
+
 
