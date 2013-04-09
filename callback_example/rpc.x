@@ -1,14 +1,12 @@
-/* rpc.x - demonstration of NFS via rpc */
-
-
-struct stuff {
-        string name<64>;
-        int val;
+struct networkMessage {
+	unsigned int connid;
+	unsigned int seqnum;
+	string payload<64>;
 };
 
 program NFS_PROGRM {
 	version NFS_VERS {
-		string TEST_FUNC(stuff)  = 1;   /* procedure number = 1 */
-		void callbackfn(int)  = 2;   /* procedure number = 2 */
+		string TEST_FUNC(networkMessage)  = 5;   /* procedure number = 1 */
+		void callbackfn(int)  = 6;   /* procedure number = 1 */		
 	} = 1;
-} = 0x33348688;	
+} = 0x33341138;	

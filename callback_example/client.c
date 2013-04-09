@@ -1,10 +1,27 @@
 #include "rpc.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <rpc/rpc.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <time.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <errno.h>
+#include <strings.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-void test_fn(stuff* argp) {
-	printf("incoming string: \"%s\"\n", argp->name);
-	printf("incoming value: %d\n", argp->val);
+void test_fn(networkMessage* argp) {
+	printf("incoming connid: %d\n", argp->connid);
+	printf("incoming seqnum: %d\n", argp->seqnum);
+	printf("incoming payload: %d\n", argp->payload);
 }
 
 gettransient(int proto, int  vers, int* sockp) {
@@ -37,7 +54,7 @@ gettransient(int proto, int  vers, int* sockp) {
 	len = sizeof(addr);
 	
 	// may be already bound, so don’t check for error
-
+	
 	bind(s, (struct sockaddr *) &addr, len);
 	if (getsockname(s, (struct sockaddr *) &addr, &len)< 0) {
 		perror("getsockname");
@@ -48,10 +65,9 @@ gettransient(int proto, int  vers, int* sockp) {
 	return (prognum-1);
 }
 
-int callback(struct svc_req *rqstp, SVCXPRT * transp)
-{
+int callback(struct svc_req *rqstp, SVCXPRT * transp) {
 	union {
-		stuff test_func_1_arg;
+		networkMessage test_func_1_arg;
 	} argument;
 
 	fprintf(stderr , "hello\n");
@@ -66,12 +82,12 @@ int callback(struct svc_req *rqstp, SVCXPRT * transp)
 		case 1:
 			
 			memset ((char *)&argument, 0, sizeof (argument));
-
-			if (!svc_getargs(transp, xdr_stuff, &argument)) {
+			
+			if (!svc_getargs(transp, xdr_networkMessage, &argument)) {
 				svcerr_decode(transp);
 				return (1);
 			}
-			test_fn((stuff *)&argument);
+			test_fn((networkMessage *)&argument);
 				fprintf(stderr, "client got callback\n");
 			if (!svc_sendreply(transp, (xdrproc_t) xdr_void, 0)) {
 				fprintf(stderr, "err: exampleprog");
@@ -84,7 +100,7 @@ int main(int argc, char** argv) {
 
 	CLIENT *clnt;
 	char *host;
-	char **result; // return value
+	char **result; /* return value */
 
 	if(argc < 3) {
 		printf("usage: %s server_host test_string\n", argv[0]);
@@ -107,9 +123,9 @@ int main(int argc, char** argv) {
 	(void)svc_register(xprt, /*(rpcprog_t)*/ x, 1, callback, 0);
 
 
-	//printf(" making RPC call\n");
+	printf(" making RPC call\n");
 	ans = callrpc(host, NFS_PROGRM, NFS_VERS,
-			(__const u_long) 2, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
+			(__const u_long) 6, (__const xdrproc_t) xdr_int, &x, (__const xdrproc_t) xdr_void, 0);
 
 	printf(" RPC called\n");
 	if ((enum clnt_stat) ans != RPC_SUCCESS) {
@@ -117,20 +133,22 @@ int main(int argc, char** argv) {
 		clnt_perrno(ans);
 		fprintf(stderr, "\n");
 	}
-	
-	stuff out;
-	out.name = argv[2];
-	out.val = 1234;
+	printf(" callrpc succeeded \n");
 
-	result = test_func_1(&out, clnt);	// call the remote function
-	printf(" test_func_1 succeeded \n");
+	networkMessage out;
+	out.connid = 0;
+	out.seqnum = 0;
+	out.payload = argv[2];
 
-	// test if the RPC succeeded
+    result = test_func_1(&out, clnt);	// call the remote function
+    printf(" test_func_1 succeeded \n");
+
+    // test if the RPC succeeded
 	if (result == NULL) {
 		clnt_perror(clnt, "call test_func failed:");
 		exit(1);
 	}
-	//printf(" result %s %s \n",*result,(*((stuff*)result1)).name);
+	printf(" result %s\n",*result);
 	//sleep(10);
 	svc_run();
 	clnt_destroy( clnt );
