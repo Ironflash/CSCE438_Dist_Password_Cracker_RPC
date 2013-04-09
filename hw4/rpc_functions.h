@@ -24,8 +24,12 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+// typedef void (*ServerCallback)(networkMessage*); 
+// typedef void (*ClientCallback)(networkMessage*); 
 // #include "lsp_server.h"
 // #include "lsp_client.h"
+// ServerCallback m_server_callback;
+// ClientCallback m_client_callback;
 // Intitialize
 void initialize_server();
 
@@ -49,4 +53,6 @@ int setupinterrupt();
 
 int setupitimer();
 
-void send_message_to_server(const char *host,CLIENT* clnt,int progNum);
+// void send_message_to_server(const char *host,CLIENT* clnt,int progNum);
+// void set_server_callback(ServerCallback callback){m_server_callback = callback;}
+// void set_client_callback(ClientCallback callback){m_client_callback = callback;}

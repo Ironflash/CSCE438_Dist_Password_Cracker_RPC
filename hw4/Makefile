@@ -26,7 +26,7 @@ request2: rpc_functions.o network.o lsp_client.o request.o cracker_clnt.o cracke
 server2: network.o rpc_functions.o network.o lsp_server.o server.o cracker_clnt.o cracker_xdr.o
 	$(CC2) $(CFLAGS) -o server  server.o network.o lsp_server.o rpc_functions.o cracker_clnt.o cracker_xdr.o
 
-rpc_functions.o: rpc_functions.c cracker.h
+rpc_functions.o: lsp_client.o lsp_server.o rpc_functions.c cracker.h
 	$(CC) $(CFLAGS) -c rpc_functions.c
 
 request.o: request.cpp

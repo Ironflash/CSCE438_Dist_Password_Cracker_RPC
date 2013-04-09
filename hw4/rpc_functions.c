@@ -96,17 +96,18 @@ int setupitimer() { // set ITIMER_REAL for ___-second intervals
     return (setitimer(ITIMER_REAL, &value, NULL));
 }
 
-void* test_func_1_svc(networkMessage * argp,struct svc_req * req) {
-	//static char *result = "this goes back";
-	fprintf(stderr,"reached4");
-	char* result = "this goes back";
-	fprintf(stderr,"reached3");
-	printf("incoming connid: %d\n", argp->connid);
-    printf("incoming seqnum: %d\n", argp->seqnum);
-    printf("incoming payload: \"%s\"\n", argp->payload);
+// void* test_func_1_svc(networkMessage * argp,struct svc_req * req) {
+// 	//static char *result = "this goes back";
+// 	fprintf(stderr,"reached4");
+// 	char* result = "this goes back";
+// 	fprintf(stderr,"reached3");
+// 	printf("incoming connid: %d\n", argp->connid);
+//     printf("incoming seqnum: %d\n", argp->seqnum);
+//     printf("incoming payload: \"%s\"\n", argp->payload);
+//     // send_message_to_server(argp);
 
-	//return(&result);
-}
+// 	//return(&result);
+// }
 
 // ****************************************
 // RPC SERVER MAIN FUNCTION:
@@ -374,7 +375,7 @@ int initialize_client(char *host,CLIENT* clnt) {
 	return x;
 }
 
-void send_message_to_server(const char *host,CLIENT* clnt,int progNum) {
+// void send_message_to_server(const char *host,CLIENT* clnt,int progNum) {
 	// int ans = callrpc(host, NFS_PROGRM, NFS_VERS,
 	// 			(__const u_long) 2, (__const xdrproc_t) xdr_int, &progNum, (__const xdrproc_t) xdr_void, 0);
 
@@ -385,4 +386,4 @@ void send_message_to_server(const char *host,CLIENT* clnt,int progNum) {
 	// 	fprintf(stderr, "\n");
 	// }
 	// svc_run();
-}
+// }

@@ -199,7 +199,7 @@ char** network_send_message(Connection *conn, networkMessage *msg){
     //char ** result = test_func_1(msg,conn->client);
     char* result = "this is a test";
     fprintf(stderr,"reached5");
-    send_message_to_server("127.0.0.1",conn->client,conn->progNum);
+    // send_message_to_server("127.0.0.1",conn->client,conn->progNum);
     // fprintf(stderr,"%s",*result);
     return &result;
 

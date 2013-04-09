@@ -1,5 +1,5 @@
 // John Keech, UIN:819000713, CSCE 438 - HW2
-
+#pragma once
 #ifndef DATATYPES_H
 #define DATATYPES_H
 
